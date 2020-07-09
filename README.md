@@ -1,0 +1,1 @@
+Library for communication with Knockaut using WebSocket and JRPC.
