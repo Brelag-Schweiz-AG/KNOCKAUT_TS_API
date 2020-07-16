@@ -1,0 +1,27 @@
+{
+  "name": "knockaut-api",
+  "version": "0.1.0",
+  "description": "API to communicate with Knockaut",
+  "author": "Severin Latkovic <severin@severila.ch>",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "lint": "eslint --ext .js,.ts src",
+    "lint-autofix": "eslint --ext .js,.ts src --fix"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^3.6.1",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.6"
+  }
+}
