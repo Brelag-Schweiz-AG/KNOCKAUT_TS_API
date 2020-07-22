@@ -4,6 +4,7 @@ import axios, { AxiosRequestConfig } from 'axios'
 
 const KnockautEndpoints = {
   GetConfigurators: 'WFC_GetConfigurators',
+  GetSnapshot: 'WFC_GetSnapshot',
 }
 
 // Connection options to Knockaut Backend
@@ -13,9 +14,16 @@ export interface ApiOptions {
   username?: string
 }
 
+// Connection options to Knockaut Backend
+export interface ApiCredentials {
+  password: string
+  username?: string
+}
+
 // Configuration for WebSocket Connection
 export interface WebSocketOptions {
   url: string
+  specificUrl: string
   autoConnect?: boolean
   reconnection?: boolean
   format?: string
@@ -27,6 +35,7 @@ export interface WebSocketOptions {
 // Default values
 const WebSocketOptionsDefaults: WebSocketOptions = {
   url: '',
+  specificUrl: '',
   autoConnect: true,
   reconnection: true,
   format: 'json',
@@ -44,6 +53,27 @@ export interface WebSocketListener {
   reconnectError: () => any
 }
 
+export const VuexWebSocketListener: WebSocketListener = {
+  onclose: ev => {
+    this.$store.commit('SOCKET_ONCLOSE', ev);
+  },
+  onerror: ev => {
+    this.$store.commit('SOCKET_ONERROR', ev);
+  },
+  onmessage: ev => {
+    this.$store.commit('SOCKET_ONMESSAGE', ev);
+  },
+  onopen: ev => {
+    this.$store.commit('SOCKET_ONOPEN', ev);
+  },
+  reconnect: count => {
+    this.$store.commit('SOCKET_RECONNECT', count);
+  },
+  reconnectError: () => {
+    this.$store.commit('SOCKET_RECONNECT_ERROR');
+  }
+}
+
 /**
  * ApiClient responsible for all communication to Knockaut Backend
  */
@@ -55,6 +85,7 @@ export class KnockautApiClient {
   private webSocket: WebSocket = null
   private reconnectionCount: number
   private reconnectTimeoutId: number
+  private configuratorID: number
 
   constructor(
     apiOptions: ApiOptions,
@@ -66,11 +97,11 @@ export class KnockautApiClient {
     this.axiosConfig = {
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFTOKEN': '',
+        //'X-CSRFTOKEN': '',
       },
-      withCredentials: true,
+      withCredentials: false,
       xsrfCookieName: 'csrftoken',
-      xsrfHeaderName: 'X-CSRFTOKEN',
+      //xsrfHeaderName: 'X-CSRFTOKEN',
     }
     if (apiOptions.password && apiOptions.username) {
       const auth = Buffer.from(
@@ -79,6 +110,9 @@ export class KnockautApiClient {
       this.axiosConfig.headers.Authorization = 'Basic ' + auth
     }
 
+    if(!webSocketOptions.specificUrl){
+      webSocketOptions.specificUrl = webSocketOptions.url
+    }
     this.wsOptions = {
       ...WebSocketOptionsDefaults,
       ...webSocketOptions,
@@ -94,13 +128,40 @@ export class KnockautApiClient {
   }
 
   /**
+   * Login after construction. (use for public/private access)
+   */
+  async setCredentials(apiCredentials : ApiCredentials) {
+    if (apiCredentials.password && apiCredentials.username) {
+      apiCredentials.username = apiCredentials.username
+        ? apiCredentials.username
+        : 'webfront'
+      const auth = Buffer.from(
+        apiCredentials.username + ':' + apiCredentials.password
+      ).toString('base64')
+      this.axiosConfig.headers.Authorization = 'Basic ' + auth
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Set the configuratorID. This is useful to target the whole API and WebSocket to the desired WebFront, since all private stuff is configurator specific.
+   * 
+   * @param configuratorID The id of the desired Configurator.
+   */
+  setConfiguratorID(configuratorID: number){
+    this.configuratorID = configuratorID;
+    this.wsOptions.specificUrl = this.buildUrl(`/wfc/${configuratorID}/api/`, true);
+  }
+
+  /**
    * Connect WebSocket
    */
   connectWebSocket(): WebSocket {
     if (this.webSocket !== null) {
       throw new Error('Websocket already connected.')
     }
-    this.webSocket = new WebSocket(this.wsOptions.url, this.wsOptions.protocol)
+    this.webSocket = new WebSocket(this.wsOptions.specificUrl, this.wsOptions.protocol)
 
     // Initialize internal handlers for websocket events
     this.webSocket.onmessage = (ev: MessageEvent) => {
@@ -175,7 +236,7 @@ export class KnockautApiClient {
   async getConfigurators() {
     try {
       let response = await axios.post(
-        this.buildUrl(KnockautEndpoints.GetConfigurators),
+        this.buildUrl(),
         this.buildData(KnockautEndpoints.GetConfigurators),
         this.axiosConfig
       )
@@ -186,11 +247,29 @@ export class KnockautApiClient {
     }
   }
 
-  private buildUrl(path: string = '/api/'): string {
-    return `${this.host}${path}`
+  /**
+   * Returns an actual snapshot for the given configurator
+   */
+  async getSnapshot(configuratorID: number = 0) {
+    try {
+      configuratorID = (!configuratorID && this.configuratorID ? this.configuratorID : configuratorID)
+      let response = await axios.post(
+        this.buildUrl(),
+        this.buildData(KnockautEndpoints.GetSnapshot, [configuratorID]),
+        this.axiosConfig
+      )
+      // TODO: Define interface for returned type
+      return response.data
+    } catch (error) {
+      this.handleError(error)
+    }
   }
 
-  private buildData(method: string, params: string[] = []) {
+  private buildUrl(path: string = '/api/', isSocket: boolean = false): string {
+    return (isSocket ? `${this.wsOptions.url}${path}` : `${this.host}${path}`);
+  }
+
+  private buildData(method: string, params: number[] = []) {
     return {
       jsonrpc: '2.0',
       method,
