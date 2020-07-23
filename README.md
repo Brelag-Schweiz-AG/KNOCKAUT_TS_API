@@ -1,5 +1,5 @@
 # Compile library
-- `yarn instal` to install dependencies
+- `yarn install` to install dependencies
 - `yarn build` to build library. Output is in `dist` folder.
 
 # Lint

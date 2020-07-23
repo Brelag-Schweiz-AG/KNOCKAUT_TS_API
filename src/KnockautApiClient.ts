@@ -1,7 +1,7 @@
 // see https://stackoverflow.com/questions/38875401/getting-error-ts2304-cannot-find-name-buffer
 declare const Buffer: any
 import axios, { AxiosRequestConfig } from 'axios'
-import Vuex from 'vuex'
+import { Store } from 'vuex'
 
 const KnockautEndpoints = {
   GetConfigurators: 'WFC_GetConfigurators',
@@ -66,13 +66,13 @@ export class KnockautApiClient {
   private reconnectionCount: number
   private reconnectTimeoutId: number
   private configuratorID: number
-  private store: Vuex.Store
+  private store: Store<any>
 
   constructor(
     apiOptions: ApiOptions,
     webSocketOptions: WebSocketOptions,
     wsListener?: WebSocketListener,
-    store?: Vuex.Store
+    store?: Store<any>
   ) {
     this.host = apiOptions.host
 
@@ -219,7 +219,9 @@ export class KnockautApiClient {
       this.reconnectTimeoutId = setTimeout(() => {
         if (this.wsListener) {
           this.wsListener.reconnect(this.reconnectionCount)
-          this.store.commit('SOCKET_RECONNECT', reconnectionCount)
+        }
+        if (this.store) {
+          this.store.commit('SOCKET_RECONNECT', this.reconnectionCount)
         }
 
         this.connectWebSocket()
@@ -227,7 +229,9 @@ export class KnockautApiClient {
     } else {
       if (this.wsListener) {
         this.wsListener.reconnectError()
-        this.store.commit('SOCKET_RECONNECT_ERROR', reconnectionCount)
+      }
+      if (this.store) {
+        this.store.commit('SOCKET_RECONNECT_ERROR', this.reconnectionCount)
       }
     }
   }
