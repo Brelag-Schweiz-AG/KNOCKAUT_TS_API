@@ -6,6 +6,17 @@ import { Store } from 'vuex'
 const KnockautEndpoints = {
   GetConfigurators: 'WFC_GetConfigurators',
   GetSnapshot: 'WFC_GetSnapshot',
+  KnockautAuthenticate: 'KNO_Authenticate',
+
+  GetConfigurations: 'KNO_GetConfigurations',
+  SetConfiguration: 'KNO_SetConfiguration',
+  RunScene: 'KNO_RunScene',
+  GetSceneConfig: 'KNO_GetSceneConfig', //done
+  SyncScene: 'KNO_SyncScene',
+  DeleteScene: 'KNO_DeleteScene',
+  GetSnapshotObject: 'KNO_GetSnapshotObject',
+  SyncEvent: 'KNO_SyncEvent',
+  DeleteEvent: 'KNO_DeleteEvent',
 }
 
 // Connection options to Knockaut Backend
@@ -45,6 +56,7 @@ const WebSocketOptionsDefaults: WebSocketOptions = {
   protocol: [],
 }
 
+// Custom listener for WebSocket actions
 export interface WebSocketListener {
   onclose: (ev: CloseEvent) => any
   onerror: (ev: Event) => any
@@ -54,11 +66,22 @@ export interface WebSocketListener {
   reconnectError: () => any
 }
 
+// Set of AxiosHeaders for different Authentication credentials
+export interface KnockautHeaderConfigs {
+  defaultApi: AxiosRequestConfig
+  extendedApi: AxiosRequestConfig
+}
+
+const DefaultKnockautHeaderConfigs: KnockautHeaderConfigs = {
+  defaultApi: {},
+  extendedApi: {},
+}
+
 /**
  * ApiClient responsible for all communication to Knockaut Backend
  */
 export class KnockautApiClient {
-  private axiosConfig: AxiosRequestConfig
+  private configs: KnockautHeaderConfigs = DefaultKnockautHeaderConfigs
   private host: string
   private wsOptions: WebSocketOptions
   private wsListener: WebSocketListener = null
@@ -76,7 +99,7 @@ export class KnockautApiClient {
   ) {
     this.host = apiOptions.host
 
-    this.axiosConfig = {
+    this.configs.defaultApi = {
       headers: {
         'Content-Type': 'application/json',
         //'X-CSRFTOKEN': '',
@@ -85,11 +108,12 @@ export class KnockautApiClient {
       xsrfCookieName: 'csrftoken',
       //xsrfHeaderName: 'X-CSRFTOKEN',
     }
+    this.configs.extendedApi = this.configs.defaultApi
     if (apiOptions.password && apiOptions.username) {
       const auth = Buffer.from(
         apiOptions.username + ':' + apiOptions.password
       ).toString('base64')
-      this.axiosConfig.headers.Authorization = 'Basic ' + auth
+      this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
     }
 
     if (!webSocketOptions.specificUrl) {
@@ -104,6 +128,10 @@ export class KnockautApiClient {
       this.wsListener = wsListener
     }
 
+    if (store) {
+      this.store = store
+    }
+
     if (this.wsOptions.autoConnect) {
       this.connectWebSocket()
     }
@@ -113,14 +141,14 @@ export class KnockautApiClient {
    * Login after construction. (use for public/private access)
    */
   async setCredentials(apiCredentials: ApiCredentials) {
-    if (apiCredentials.password && apiCredentials.username) {
+    if (apiCredentials.password) {
       apiCredentials.username = apiCredentials.username
         ? apiCredentials.username
         : 'webfront'
       const auth = Buffer.from(
         apiCredentials.username + ':' + apiCredentials.password
       ).toString('base64')
-      this.axiosConfig.headers.Authorization = 'Basic ' + auth
+      this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
       return true
     }
     return false
@@ -244,7 +272,7 @@ export class KnockautApiClient {
       let response = await axios.post(
         this.buildUrl(),
         this.buildData(KnockautEndpoints.GetConfigurators),
-        this.axiosConfig
+        this.configs.defaultApi
       )
       // TODO: Define interface for returned type
       return response.data
@@ -265,13 +293,60 @@ export class KnockautApiClient {
       let response = await axios.post(
         this.buildUrl(),
         this.buildData(KnockautEndpoints.GetSnapshot, [configuratorID]),
-        this.axiosConfig
+        this.configs.defaultApi
       )
       // TODO: Define interface for returned type
       return response.data
     } catch (error) {
       this.handleError(error)
     }
+  }
+
+  /**
+   * Authenticates the user for the settings area. This is not the default api authentication
+   */
+  async authorize(password: string) {
+    try {
+      if (password) {
+        const auth = Buffer.from('settings:' + password).toString('base64')
+        this.configs.extendedApi.headers.Authorization = 'Basic ' + auth
+        let response = await axios.post(
+          this.buildUrl('/hook/knockaut/api/v1/'),
+          this.buildData(KnockautEndpoints.KnockautAuthenticate, [
+            this.configuratorID,
+          ]),
+          this.configs.extendedApi
+        )
+        // TODO: Define interface for returned type
+        return response.data
+      }
+    } catch (error) {
+      return false
+    }
+  }
+
+  /**
+   * Returns the configuration for the given house-automation-scene
+   */
+  async getSceneConfig(sceneID: number) {
+    try {
+      let response = await axios.post(
+        this.buildUrl('/hook/knockaut/api/v1/'),
+        this.buildData(KnockautEndpoints.GetSceneConfig, [
+          this.configuratorID,
+          sceneID,
+        ]),
+        this.configs.extendedApi
+      )
+      // TODO: Define interface for returned type
+      return response.data
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+
+  async getConfigurations() {
+    return await this.buildCall(KnockautEndpoints.GetConfigurations).execute()
   }
 
   private buildUrl(path: string = '/api/', isSocket: boolean = false): string {
@@ -284,6 +359,34 @@ export class KnockautApiClient {
       method,
       params,
       id: Date.now(),
+    }
+  }
+
+  private buildCall(
+    method: string,
+    params: number[] = [],
+    isExtendedCall: boolean = true
+  ) {
+    return {
+      method: method,
+      params: [this.configuratorID].concat(params),
+      isExtendedCall: isExtendedCall,
+      execute: async () => {
+        try {
+          if (isExtendedCall) {
+            params = [this.configuratorID].concat(params)
+          }
+          let response = await axios.post(
+            this.buildUrl(isExtendedCall ? '/hook/knockaut/api/v1/' : '/api/'),
+            this.buildData(method, params),
+            isExtendedCall ? this.configs.extendedApi : this.configs.defaultApi
+          )
+          // TODO: Define interface for returned type
+          return response.data
+        } catch (error) {
+          this.handleError(error)
+        }
+      },
     }
   }
 
