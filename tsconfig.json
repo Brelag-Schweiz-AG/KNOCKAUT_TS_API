@@ -3,8 +3,7 @@
     "module": "esnext",
     "target": "esnext",
     "moduleResolution": "node",
-    //"outDir": "./dist",
-    "outDir": "../KNOCKAUT_DI_App-Ultimate/src/plugins/KnockautApiClient",
+    "outDir": "./dist",
 	  "declaration": true
   },
   "include": [
