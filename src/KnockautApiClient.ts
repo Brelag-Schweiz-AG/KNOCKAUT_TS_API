@@ -17,6 +17,7 @@ const KnockautEndpoints = {
   GetSnapshotObject: 'KNO_GetSnapshotObject',
   SyncEvent: 'KNO_SyncEvent',
   DeleteEvent: 'KNO_DeleteEvent',
+  GetIconUrl: 'KNO_GetIconUrl',
 }
 
 // Connection options to Knockaut Backend
@@ -277,38 +278,26 @@ export class KnockautApiClient {
    * Returns all configurators
    */
   async getConfigurators() {
-    try {
-      let response = await axios.post(
-        this.buildUrl(),
-        this.buildData(KnockautEndpoints.GetConfigurators),
-        this.configs.defaultApi
-      )
-      // TODO: Define interface for returned type
-      return response.data
-    } catch (error) {
-      this.handleError(error)
-    }
+    return await this.buildCall(
+      KnockautEndpoints.GetConfigurators,
+      [],
+      false
+    ).execute()
   }
 
   /**
    * Returns an actual snapshot for the given configurator
    */
   async getSnapshot(configuratorID: number = 0) {
-    try {
-      configuratorID =
-        !configuratorID && this.configuratorID
-          ? this.configuratorID
-          : configuratorID
-      let response = await axios.post(
-        this.buildUrl(),
-        this.buildData(KnockautEndpoints.GetSnapshot, [configuratorID]),
-        this.configs.defaultApi
-      )
-      // TODO: Define interface for returned type
-      return response.data
-    } catch (error) {
-      this.handleError(error)
-    }
+    configuratorID =
+      !configuratorID && this.configuratorID
+        ? this.configuratorID
+        : configuratorID
+    return await this.buildCall(
+      KnockautEndpoints.GetSnapshot,
+      [],
+      false
+    ).execute()
   }
 
   /**
@@ -335,26 +324,6 @@ export class KnockautApiClient {
   }
 
   /**
-   * Returns the configuration for the given house-automation-scene
-   */
-  async getSceneConfig(sceneID: number) {
-    try {
-      let response = await axios.post(
-        this.buildUrl('/hook/knockaut/api/v1/'),
-        this.buildData(KnockautEndpoints.GetSceneConfig, [
-          this.configuratorID,
-          sceneID,
-        ]),
-        this.configs.extendedApi
-      )
-      // TODO: Define interface for returned type
-      return response.data
-    } catch (error) {
-      this.handleError(error)
-    }
-  }
-
-  /**
    * Returns all deviceconfigurations
    */
   async getConfigurations() {
@@ -362,76 +331,85 @@ export class KnockautApiClient {
   }
 
   /**
+   * Sets a specific Device configuration
+   */
+  async setConfiguration(device) {
+    return await this.buildCall(KnockautEndpoints.SetConfiguration, [
+      device,
+    ]).execute()
+  }
+
+  /**
+   * Runs the schript with the given id
+   */
+  async runScene(scriptID: number) {
+    return await this.buildCall(KnockautEndpoints.RunScene, [
+      scriptID,
+    ]).execute()
+  }
+
+  /**
+   * Returns the configuration for the given house-automation-scene
+   */
+  async getSceneConfig(sceneID: number) {
+    return await this.buildCall(KnockautEndpoints.GetSceneConfig, [
+      sceneID,
+    ]).execute()
+  }
+
+  /**
+   * Syncronizes a Scene. (add, edit, delete script-content)
+   */
+  async syncScene(sceneID: number) {
+    return await this.buildCall(KnockautEndpoints.SyncScene, [
+      sceneID,
+    ]).execute()
+  }
+
+  /**
+   * Deletes an entire Scene-Script
+   */
+  async deleteScene(sceneID: number) {
+    return await this.buildCall(KnockautEndpoints.DeleteScene, [
+      sceneID,
+    ]).execute()
+  }
+
+  /**
+   * Syncronizes an Event
+   */
+  async syncEvent(event) {
+    return await this.buildCall(KnockautEndpoints.SyncEvent, [event]).execute()
+  }
+
+  /**
+   * Deletes an entire Event
+   */
+  async deleteEvent(eventID: number) {
+    return await this.buildCall(KnockautEndpoints.DeleteEvent, [
+      eventID,
+    ]).execute()
+  }
+
+  /**
+   * Returns an Object in the same Structure as it is in the Snapshot
+   */
+  async getSnapshotObject(objectID: number) {
+    return await this.buildCall(KnockautEndpoints.GetSnapshotObject, [
+      objectID,
+    ]).execute()
+  }
+
+  /**
    * Returns the icon-url for the given Object
    * @param object The IPSymcon Snapshot Object
    */
-  getIcon(object) {
-    let icon = ''
-    let resolvedLinkType = null
-    if (object.icon) {
-      icon = object.icon // 1. Take Object Icon if available
-    } else if (object.type == 6) {
-      // IF Object is a Link (type=6)
-      if (
-        this.store.state.snapshot.result.objects['ID' + object.data.targetID]
-          .icon
-      ) {
-        icon = this.store.state.snapshot.result.objects[
-          'ID' + object.data.targetID
-        ].icon // 2. Take Target Object Icon if available
-      } else {
-        resolvedLinkType = this.store.state.snapshot.result.objects[
-          'ID' + object.data.targetID
-        ].type
-      }
-    }
-    if (icon === '') {
-      switch (
-        resolvedLinkType ? resolvedLinkType : object.type // 4. Take this default icons if nothing other is defined (optional)
-      ) {
-        case 0:
-          icon = 'Door'
-          break
-        case 1:
-          icon = 'Plug'
-          break
-        case 2:
-          var profileName = object.data.profile
-          if (profileName) {
-            icon = this.store.state.snapshot.result.profiles[profileName].icon // 3. Take Profile related Icon if available
-          } else {
-            icon = 'Minus'
-          }
-          break
-        case 3:
-          icon = 'Script'
-          break
-        case 4:
-          icon = 'Electricity'
-          break
-        case 5:
-          icon = 'Image'
-          break
-        case 6:
-          icon = 'Link'
-          break
-      }
-    }
-    var path = ''
-    var img = ''
-    if (icon) {
-      if (icon.startsWith('BRELAG')) {
-        path =
-          this.store.getters.httpHost +
-          '/skins/KnockAutSkin/icons/' +
-          icon +
-          '.png'
-      } else {
-        path = this.store.getters.httpHost + '/img/icons/' + icon + '.svg'
-      }
-      img = '<img src="' + path + '" width="32px"></img>'
-    }
-    return img
+  async getIcon(object) {
+    // object can be either a snapshot-object, or just an ObjectID (int)
+    var resp = await this.buildCall(KnockautEndpoints.GetIconUrl, [
+      object,
+    ]).execute()
+    return `${this.host}${resp.result}`
   }
 
   private buildUrl(path: string = '/api/', isSocket: boolean = false): string {
