@@ -289,15 +289,21 @@ export class KnockautApiClient {
    * Returns an actual snapshot for the given configurator
    */
   async getSnapshot(configuratorID: number = 0) {
-    configuratorID =
-      !configuratorID && this.configuratorID
-        ? this.configuratorID
-        : configuratorID
-    return await this.buildCall(
-      KnockautEndpoints.GetSnapshot,
-      [],
-      false
-    ).execute()
+    try {
+      configuratorID =
+        !configuratorID && this.configuratorID
+          ? this.configuratorID
+          : configuratorID
+      let response = await axios.post(
+        this.buildUrl(),
+        this.buildData(KnockautEndpoints.GetSnapshot, [configuratorID]),
+        this.configs.defaultApi
+      )
+      // TODO: Define interface for returned type
+      return response.data
+    } catch (error) {
+      this.handleError(error)
+    }
   }
 
   /**
