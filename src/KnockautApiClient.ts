@@ -78,6 +78,21 @@ const DefaultKnockautHeaderConfigs: KnockautHeaderConfigs = {
   extendedApi: {},
 }
 
+interface SnapshotObject {
+  data: Object
+  disabled: boolean
+  hidden: boolean
+  icon: string
+  ident: string
+  info: string
+  name: string
+  parentID: number
+  position: number
+  readOnly: boolean
+  summary: string
+  type: number
+}
+
 /**
  * ApiClient responsible for all communication to Knockaut Backend
  */
@@ -270,7 +285,7 @@ export class KnockautApiClient {
    * @param method Name of the Method
    * @param params Array of parameters for the given Method
    */
-  async customRequest(method, params = []) {
+  async customRequest(method: string, params: any[] = []) {
     return await this.buildCall(method, params, false).execute()
   }
 
@@ -408,14 +423,15 @@ export class KnockautApiClient {
 
   /**
    * Returns the icon-url for the given Object
-   * @param object The IPSymcon Snapshot Object
+   * @param object The IPSymcon Snapshot Object or the ID of the Object
    */
-  async getIcon(object) {
+  async getIcon(object: SnapshotObject | number) {
     // object can be either a snapshot-object, or just an ObjectID (int)
     var resp = await this.buildCall(KnockautEndpoints.GetIconUrl, [
       object,
     ]).execute()
-    return `${this.host}${resp.result}`
+    const icon_url: string = `${this.host}${resp}`
+    return icon_url
   }
 
   getIconByName(name: string, ext: string = 'png') {
@@ -440,7 +456,7 @@ export class KnockautApiClient {
 
   private buildCall(
     method: string,
-    params: number[] = [],
+    params: any[] = [],
     isExtendedCall: boolean = true
   ) {
     return {
@@ -458,7 +474,7 @@ export class KnockautApiClient {
             isExtendedCall ? this.configs.extendedApi : this.configs.defaultApi
           )
           // TODO: Define interface for returned type
-          return response.data
+          return response.data.result
         } catch (error) {
           this.handleError(error)
         }
