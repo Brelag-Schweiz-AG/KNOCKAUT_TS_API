@@ -6,12 +6,13 @@ import { Store } from 'vuex'
 const KnockautEndpoints = {
   GetConfigurators: 'WFC_GetConfigurators',
   GetSnapshot: 'WFC_GetSnapshot',
-  KnockautAuthenticate: 'KNO_Authenticate',
+  Execute: 'WFC_Execute',
 
+  KnockautAuthenticate: 'KNO_Authenticate',
   GetConfigurations: 'KNO_GetConfigurations',
   SetConfiguration: 'KNO_SetConfiguration',
   RunScene: 'KNO_RunScene',
-  GetSceneConfig: 'KNO_GetSceneConfig', //done
+  GetSceneConfig: 'KNO_GetSceneConfig',
   SyncScene: 'KNO_SyncScene',
   DeleteScene: 'KNO_DeleteScene',
   GetSnapshotObject: 'KNO_GetSnapshotObject',
@@ -93,6 +94,12 @@ interface SnapshotObject {
   type: number
 }
 
+interface WFCExecute {
+  actionID: number
+  targetID: number
+  value: number | boolean | string
+}
+
 /**
  * ApiClient responsible for all communication to Knockaut Backend
  */
@@ -153,6 +160,10 @@ export class KnockautApiClient {
     }
   }
 
+  getHost() {
+    return this.host
+  }
+
   /**
    * Login after construction. (use for public/private access)
    */
@@ -201,7 +212,7 @@ export class KnockautApiClient {
         this.wsListener.onmessage(ev)
       }
       if (this.store) {
-        this.store.commit('SOCKET_ONMESSAGE', ev)
+        this.store.commit('SOCKET_ONMESSAGE', JSON.parse(ev.data))
       }
     }
     this.webSocket.onerror = (ev: Event) => {
@@ -301,6 +312,18 @@ export class KnockautApiClient {
   }
 
   /**
+   * Executes an WFC_Execute command
+   */
+  async execute(command: WFCExecute) {
+    const params = []
+    params.push(this.configuratorID)
+    params.push(command.actionID)
+    params.push(parseInt(command.targetID.toString()))
+    params.push(command.value)
+    await this.buildCall(KnockautEndpoints.Execute, params, false).execute()
+  }
+
+  /**
    * Returns an actual snapshot for the given configurator
    */
   async getSnapshot(configuratorID: number = 0) {
@@ -381,10 +404,8 @@ export class KnockautApiClient {
   /**
    * Syncronizes a Scene. (add, edit, delete script-content)
    */
-  async syncScene(sceneID: number) {
-    return await this.buildCall(KnockautEndpoints.SyncScene, [
-      sceneID,
-    ]).execute()
+  async syncScene(scene) {
+    return await this.buildCall(KnockautEndpoints.SyncScene, [scene]).execute()
   }
 
   /**
@@ -461,7 +482,7 @@ export class KnockautApiClient {
   ) {
     return {
       method: method,
-      params: [this.configuratorID].concat(params),
+      params: params,
       isExtendedCall: isExtendedCall,
       execute: async () => {
         try {
