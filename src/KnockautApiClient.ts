@@ -418,6 +418,13 @@ export class KnockautApiClient {
     return `${this.host}${resp.result}`
   }
 
+  getIconByName(name: string, ext: string = 'png') {
+    if (name.startsWith('BRELAG')) {
+      return `${this.host}/skins/KnockAutSkin/icons/${name}.${ext}`
+    }
+    return `${this.host}/img/icons/${name}.svg`
+  }
+
   private buildUrl(path: string = '/api/', isSocket: boolean = false): string {
     return isSocket ? `${this.wsOptions.baseUrl}${path}` : `${this.host}${path}`
   }
