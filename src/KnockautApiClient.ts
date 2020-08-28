@@ -15,6 +15,9 @@ const KnockautEndpoints = {
   GetSceneConfig: 'KNO_GetSceneConfig',
   SyncScene: 'KNO_SyncScene',
   DeleteScene: 'KNO_DeleteScene',
+  GetAlarms: 'KNO_GetAlarms',
+  SyncAlarm: 'KNO_SyncAlarm',
+  DeleteAlarm: 'KNO_DeleteAlarm',
   GetSnapshotObject: 'KNO_GetSnapshotObject',
   SyncEvent: 'KNO_SyncEvent',
   DeleteEvent: 'KNO_DeleteEvent',
@@ -414,6 +417,29 @@ export class KnockautApiClient {
   async deleteScene(sceneID: number) {
     return await this.buildCall(KnockautEndpoints.DeleteScene, [
       sceneID,
+    ]).execute()
+  }
+
+  /**
+   * Returns the configuration for the given house-automation-scene
+   */
+  async getAlarms() {
+    return await this.buildCall(KnockautEndpoints.GetAlarms).execute()
+  }
+
+  /**
+   * Syncronizes a Scene. (add, edit, delete script-content)
+   */
+  async syncAlarm(alarm) {
+    return await this.buildCall(KnockautEndpoints.SyncAlarm, [alarm]).execute()
+  }
+
+  /**
+   * Deletes an entire Scene-Script
+   */
+  async deleteAlarm(alarmID: number) {
+    return await this.buildCall(KnockautEndpoints.DeleteAlarm, [
+      alarmID,
     ]).execute()
   }
 
