@@ -23,6 +23,8 @@ const KnockautEndpoints = {
   DeleteEvent: 'KNO_DeleteEvent',
   GetIconUrl: 'KNO_GetIconUrl',
   SyncFooterVars: 'KNO_SyncFooterVars',
+  GetAppInfo: 'KNO_GetAppInfo',
+  UpdateApp: 'KNO_UpdateApp',
 }
 
 // Connection options to Knockaut Backend
@@ -482,6 +484,20 @@ export class KnockautApiClient {
     return await this.buildCall(KnockautEndpoints.GetSnapshotObject, [
       objectID,
     ]).execute()
+  }
+
+  /**
+   * Returns an Object of AppInfos and alailable Update info
+   */
+  async getAppInfo() {
+    return await this.buildCall(KnockautEndpoints.GetAppInfo).execute()
+  }
+
+  /**
+   * Returns true if the app was sucessfully updated
+   */
+  async updateApp() {
+    return await this.buildCall(KnockautEndpoints.UpdateApp).execute()
   }
 
   /**
