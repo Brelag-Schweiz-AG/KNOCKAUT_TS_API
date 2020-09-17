@@ -22,6 +22,7 @@ const KnockautEndpoints = {
   SyncEvent: 'KNO_SyncEvent',
   DeleteEvent: 'KNO_DeleteEvent',
   GetIconUrl: 'KNO_GetIconUrl',
+  SyncFooterVars: 'KNO_SyncFooterVars',
 }
 
 // Connection options to Knockaut Backend
@@ -101,6 +102,11 @@ interface WFCExecute {
   actionID: number
   targetID: number
   value: number | boolean | string
+}
+
+interface FooterVariable {
+  id: number
+  name: string
 }
 
 /**
@@ -456,6 +462,16 @@ export class KnockautApiClient {
   async deleteEvent(eventID: number) {
     return await this.buildCall(KnockautEndpoints.DeleteEvent, [
       eventID,
+    ]).execute()
+  }
+
+  /**
+   * Create, Update and Delete Links for Variables shown in the Footer of the Ultimate-App
+   * This function searches for existing Link-IDs, The new Links are created from variable-IDs
+   */
+  async syncFooterVars(variables: Array<FooterVariable>) {
+    return await this.buildCall(KnockautEndpoints.SyncFooterVars, [
+      variables,
     ]).execute()
   }
 
