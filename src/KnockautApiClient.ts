@@ -554,6 +554,9 @@ export class KnockautApiClient {
             isExtendedCall ? this.configs.extendedApi : this.configs.defaultApi
           )
           // TODO: Define interface for returned type
+          if (response.data.error) {
+            throw new Error(response.data.error)
+          }
           return response.data.result
         } catch (error) {
           this.handleError(error)
