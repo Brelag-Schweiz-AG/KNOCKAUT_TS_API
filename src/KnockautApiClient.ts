@@ -555,7 +555,11 @@ export class KnockautApiClient {
           )
           // TODO: Define interface for returned type
           if (response.data.error) {
-            throw new Error(response.data.error)
+            if (response.data.error.message) {
+              throw new Error(response.data.error.message)
+            } else {
+              throw new Error(response.data.error)
+            }
           }
           return response.data.result
         } catch (error) {
