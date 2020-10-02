@@ -521,6 +521,74 @@ export class KnockautApiClient {
     return `${this.host}/img/icons/${name}.svg`
   }
 
+  getIconLocal(object: SnapshotObject | number | string, path: string = '@/assets/icons/') {
+    if (Number.isNaN(object) && typeof object !== 'object'){
+      var iconName = <string> object;
+      return `@/assets/icons/${iconName}.svg`
+    } else {
+      if(!Number.isNaN(object)){
+        var objectID = object;
+        object = this.store.state.snapshot.result.objects['ID'+objectID];
+      }
+      var iconName = ( <SnapshotObject> object).icon;
+      if(!iconName){
+        if(object.type == 6){ // Link
+          object = this.store.state.snapshot.result.objects['ID'+object.data.targetID];
+          iconName = object.icon;
+        }
+        if(!iconName){
+          switch(object.type){
+            case 0:
+              iconName = 'Door';
+              break;
+            case 1:
+              iconName = 'Plug';
+              break;
+            case 2:
+              var profileName = object.data.profile;
+              if(object.data.customProfile){
+                profileName = object.data.customProfile;
+              }
+              if (profileName) {
+                var profile = this.store.state.snapshot.result.profiles[profileName];
+                if(profile){
+                  iconName = profile.icon;
+                }
+                if(!iconName){
+                  if(Array.isArray(profile.associations.length) && profile.associations.length > 0){
+                    if(typeof profile.associations[object.data.value] !== 'undefined') {
+                      iconName = profile.associations[object.data.value].icon;
+                    }
+                  }
+                }
+              }
+              else {
+                iconName = 'Minus';
+              }
+              break;
+            case 3:
+              iconName = 'Script';
+              break;
+            case 4:
+              iconName = 'Clock';
+              break;
+            case 5:
+              iconName = 'Image';
+              break;
+            case 6:
+              iconName = 'Link';
+              break;
+          }
+        }
+      }
+    }
+    if(filenameOnly){
+      return iconName+'.svg';
+    } else {
+      return '@/assets/icons/'+iconName+'.svg';
+    }
+  }
+
   private buildUrl(path: string = '/api/', isSocket: boolean = false): string {
     return isSocket ? `${this.wsOptions.baseUrl}${path}` : `${this.host}${path}`
   }
