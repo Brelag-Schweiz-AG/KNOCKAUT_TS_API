@@ -522,15 +522,15 @@ export class KnockautApiClient {
   }
 
   getIconLocal(object: SnapshotObject | number | string, path: string = '@/assets/icons/') {
+    var iconName = '';
     if (Number.isNaN(object) && typeof object !== 'object'){
-      var iconName = <string> object;
-      return `@/assets/icons/${iconName}.svg`
+      iconName = <string> object;
     } else {
       if(!Number.isNaN(object)){
         var objectID = object;
         object = this.store.state.snapshot.result.objects['ID'+objectID];
       }
-      var iconName = ( <SnapshotObject> object).icon;
+      iconName = ( <SnapshotObject> object).icon;
       if(!iconName){
         if(object.type == 6){ // Link
           object = this.store.state.snapshot.result.objects['ID'+object.data.targetID];
@@ -582,11 +582,7 @@ export class KnockautApiClient {
         }
       }
     }
-    if(filenameOnly){
-      return iconName+'.svg';
-    } else {
-      return '@/assets/icons/'+iconName+'.svg';
-    }
+    return `${path}${iconName}.svg`;
   }
 
   private buildUrl(path: string = '/api/', isSocket: boolean = false): string {
