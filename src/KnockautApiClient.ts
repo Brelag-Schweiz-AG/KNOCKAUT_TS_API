@@ -514,7 +514,7 @@ export class KnockautApiClient {
     return icon_url
   }
 
-  getIconByName(name: string, ext: string = 'png') {
+  getIconByName(name: string, ext: string = 'svg') {
     if (name.startsWith('BRELAG')) {
       return `${this.host}/skins/KnockAutSkin/icons/${name}.${ext}`
     }
