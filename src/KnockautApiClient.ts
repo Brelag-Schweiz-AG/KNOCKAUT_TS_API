@@ -86,7 +86,7 @@ const DefaultKnockautHeaderConfigs: KnockautHeaderConfigs = {
 }
 
 interface SnapshotObject {
-  data: Object
+  data: any
   disabled: boolean
   hidden: boolean
   icon: string
@@ -505,39 +505,32 @@ export class KnockautApiClient {
    * Returns the icon-url for the given Object
    * @param object The IPSymcon Snapshot Object or the ID of the Object
    */
-  async getIcon(object: SnapshotObject | number) {
-    // object can be either a snapshot-object, or just an ObjectID (int)
-    var resp = await this.buildCall(KnockautEndpoints.GetIconUrl, [
-      object,
-    ]).execute()
-    const icon_url: string = `${this.host}${resp}`
-    return icon_url
-  }
-
-  getIconByName(name: string, ext: string = 'svg') {
-    if (name.startsWith('BRELAG')) {
-      return `${this.host}/skins/KnockAutSkin/icons/${name}.${ext}`
+  getIcon(object: SnapshotObject | number | string) {
+    // object can be either a snapshot-object, an ObjectID (int), or just an icon name (string)
+    var iconName = this.getIconLocal(object,'');
+    if (iconName.startsWith('BRELAG')) {
+      return `${this.host}/skins/KnockAutSkin/icons/${iconName}`
     }
-    return `${this.host}/img/icons/${name}.svg`
+    return `${this.host}/img/icons/${iconName}`
   }
 
   getIconLocal(object: SnapshotObject | number | string, path: string = '@/assets/icons/') {
     var iconName = '';
-    if (Number.isNaN(object) && typeof object !== 'object'){
+    if (Number.isNaN(parseInt(<string>object)) && typeof object !== 'object'){
       iconName = <string> object;
     } else {
-      if(!Number.isNaN(object)){
+      if(!Number.isNaN(parseInt(<string>object))){
         var objectID = object;
         object = this.store.state.snapshot.result.objects['ID'+objectID];
       }
       iconName = ( <SnapshotObject> object).icon;
       if(!iconName){
-        if(object.type == 6){ // Link
-          object = this.store.state.snapshot.result.objects['ID'+object.data.targetID];
-          iconName = object.icon;
+        if((<SnapshotObject> object).type == 6){ // Link
+          object = this.store.state.snapshot.result.objects['ID'+(<SnapshotObject> object).data.targetID];
+          iconName = (<SnapshotObject> object).icon;
         }
         if(!iconName){
-          switch(object.type){
+          switch((<SnapshotObject> object).type){
             case 0:
               iconName = 'Door';
               break;
@@ -545,9 +538,9 @@ export class KnockautApiClient {
               iconName = 'Plug';
               break;
             case 2:
-              var profileName = object.data.profile;
-              if(object.data.customProfile){
-                profileName = object.data.customProfile;
+              var profileName = (<SnapshotObject> object).data.profile;
+              if((<SnapshotObject> object).data.customProfile){
+                profileName = (<SnapshotObject> object).data.customProfile;
               }
               if (profileName) {
                 var profile = this.store.state.snapshot.result.profiles[profileName];
@@ -556,8 +549,8 @@ export class KnockautApiClient {
                 }
                 if(!iconName){
                   if(Array.isArray(profile.associations.length) && profile.associations.length > 0){
-                    if(typeof profile.associations[object.data.value] !== 'undefined') {
-                      iconName = profile.associations[object.data.value].icon;
+                    if(typeof profile.associations[( <SnapshotObject> object).data.value] !== 'undefined') {
+                      iconName = profile.associations[( <SnapshotObject> object).data.value].icon;
                     }
                   }
                 }
