@@ -32,6 +32,7 @@ export interface ApiOptions {
   host: string
   password?: string
   username?: string
+  skin?: string
 }
 
 // Connection options to Knockaut Backend
@@ -124,6 +125,7 @@ export class KnockautApiClient {
   private reconnectTimeoutId: number
   private configuratorID: number
   private store: Store<any>
+  private skin: string
 
   constructor(
     apiOptions: ApiOptions,
@@ -148,6 +150,11 @@ export class KnockautApiClient {
         apiOptions.username + ':' + apiOptions.password
       ).toString('base64')
       this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
+    }
+    if (apiOptions.skin) {
+      this.skin = apiOptions.skin
+    } else {
+      this.skin = 'KNOCKAUT_DI_Skin'
     }
 
     if (!webSocketOptions.specificUrl) {
@@ -517,7 +524,7 @@ export class KnockautApiClient {
     // object can be either a snapshot-object, an ObjectID (int), or just an icon name (string)
     var iconName = this.getIconLocal(object,'');
     if (iconName.startsWith('BRELAG')) {
-      return `${this.host}/skins/KnockAutSkin/icons/${iconName}`
+      return `${this.host}/skins/${this.skin}/icons/${iconName}`
     }
     return `${this.host}/img/icons/${iconName}`
   }
