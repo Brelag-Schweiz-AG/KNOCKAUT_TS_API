@@ -211,7 +211,12 @@ export class KnockautApiClient {
    */
   connectWebSocket(): WebSocket {
     if (this.webSocket !== null) {
-      throw new Error('Websocket already connected.')
+      try {
+        this.webSocket.close()
+      } catch (ex) {}
+      this.webSocket = null;
+      this.reconnect();
+      return;
     }
     this.webSocket = new WebSocket(
       this.wsOptions.specificUrl,
@@ -299,6 +304,9 @@ export class KnockautApiClient {
       }
       if (this.store) {
         this.store.commit('SOCKET_RECONNECT_ERROR', this.reconnectionCount)
+      }
+      if (!this.wsListener && !this.store) {
+        throw new Error('Too many Websocket reconnect attempts.')
       }
     }
   }
