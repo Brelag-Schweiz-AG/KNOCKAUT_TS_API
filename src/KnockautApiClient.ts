@@ -25,6 +25,7 @@ const KnockautEndpoints = {
   SyncFooterVars: 'KNO_SyncFooterVars',
   GetAppInfo: 'KNO_GetAppInfo',
   UpdateApp: 'KNO_UpdateApp',
+  ChangePassword: 'KNO_ChangePassword',
 }
 
 // Connection options to Knockaut Backend
@@ -499,6 +500,18 @@ export class KnockautApiClient {
   async getSnapshotObject(objectID: number) {
     return await this.buildCall(KnockautEndpoints.GetSnapshotObject, [
       objectID,
+    ]).execute()
+  }
+
+  /**
+   * Changes the settings password and returns an object with sucess or error messages
+   */
+  async changePassword(oldPassword: number, newPassword: number) {
+    return await this.buildCall(KnockautEndpoints.ChangePassword, [
+      {
+        old: oldPassword,
+        new: newPassword
+      }
     ]).execute()
   }
 
