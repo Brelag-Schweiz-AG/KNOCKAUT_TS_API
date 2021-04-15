@@ -1,6 +1,6 @@
 {
   "name": "@brelag-schweiz-ag/knockaut_ts_api",
-  "version": "0.1.17",
+  "version": "0.1.19",
   "description": "API to communicate with Knockaut",
   "author": "Severin Latkovic <severin@severila.ch>",
   "main": "dist/index.js",
@@ -8,6 +8,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
+    "pack": "cd dist && npm pack && cd ..",
     "lint": "eslint --ext .js,.ts src",
     "lint-autofix": "eslint --ext .js,.ts src --fix"
   },
@@ -16,7 +17,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "vue": "^2.6.11",
     "vuex": "^3.5.1"
   },
