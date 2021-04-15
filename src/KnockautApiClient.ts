@@ -222,9 +222,9 @@ export class KnockautApiClient {
       try {
         this.webSocket.close()
       } catch (ex) {}
-      this.webSocket = null;
-      this.reconnect();
-      return;
+      this.webSocket = null
+      this.reconnect()
+      return
     }
     this.webSocket = new WebSocket(
       this.wsOptions.specificUrl,
@@ -510,8 +510,8 @@ export class KnockautApiClient {
     return await this.buildCall(KnockautEndpoints.ChangePassword, [
       {
         old: oldPassword,
-        new: newPassword
-      }
+        new: newPassword,
+      },
     ]).execute()
   }
 
@@ -535,75 +535,92 @@ export class KnockautApiClient {
    */
   getIcon(object: SnapshotObject | number | string) {
     // object can be either a snapshot-object, an ObjectID (int), or just an icon name (string)
-    var iconName = this.getIconLocal(object,'');
+    var iconName = this.getIconLocal(object, '')
     if (iconName.startsWith('BRELAG')) {
       return `${this.host}/skins/${this.skin}/icons/${iconName}`
     }
     return `${this.host}/img/icons/${iconName}`
   }
 
-  getIconLocal(object: SnapshotObject | number | string, path: string = '@/assets/icons/') {
-    var iconName = '';
-    if (Number.isNaN(parseInt(<string>object)) && typeof object !== 'object'){
-      iconName = <string> object;
+  getIconLocal(
+    object: SnapshotObject | number | string,
+    path: string = '@/assets/icons/'
+  ) {
+    var iconName = ''
+    if (Number.isNaN(parseInt(<string>object)) && typeof object !== 'object') {
+      iconName = <string>object
     } else {
-      if(!Number.isNaN(parseInt(<string>object))){
-        var objectID = object;
-        object = this.store.state.snapshot.result.objects['ID'+objectID];
+      if (!Number.isNaN(parseInt(<string>object))) {
+        var objectID = object
+        object = this.store.state.snapshot.result.objects['ID' + objectID]
       }
-      iconName = ( <SnapshotObject> object).icon;
-      if(!iconName){
-        if((<SnapshotObject> object).type == 6){ // Link
-          object = this.store.state.snapshot.result.objects['ID'+(<SnapshotObject> object).data.targetID];
-          iconName = (<SnapshotObject> object).icon;
+      iconName = (<SnapshotObject>object).icon
+      if (!iconName) {
+        if ((<SnapshotObject>object).type == 6) {
+          // Link
+          object = this.store.state.snapshot.result.objects[
+            'ID' + (<SnapshotObject>object).data.targetID
+          ]
+          iconName = (<SnapshotObject>object).icon
         }
-        if(!iconName){
-          switch((<SnapshotObject> object).type){
+        if (!iconName) {
+          switch ((<SnapshotObject>object).type) {
             case 0:
-              iconName = 'Door';
-              break;
+              iconName = 'Door'
+              break
             case 1:
-              iconName = 'Plug';
-              break;
+              iconName = 'Plug'
+              break
             case 2:
-              var profileName = (<SnapshotObject> object).data.profile;
-              if((<SnapshotObject> object).data.customProfile){
-                profileName = (<SnapshotObject> object).data.customProfile;
+              var profileName = (<SnapshotObject>object).data.profile
+              if ((<SnapshotObject>object).data.customProfile) {
+                profileName = (<SnapshotObject>object).data.customProfile
               }
               if (profileName) {
-                var profile = this.store.state.snapshot.result.profiles[profileName];
-                if(profile){
-                  iconName = profile.icon;
+                var profile = this.store.state.snapshot.result.profiles[
+                  profileName
+                ]
+                if (profile) {
+                  iconName = profile.icon
                 }
-                if(!iconName){
-                  if(Array.isArray(profile.associations.length) && profile.associations.length > 0){
-                    if(typeof profile.associations[( <SnapshotObject> object).data.value] !== 'undefined') {
-                      iconName = profile.associations[( <SnapshotObject> object).data.value].icon;
+                if (!iconName) {
+                  if (
+                    Array.isArray(profile.associations.length) &&
+                    profile.associations.length > 0
+                  ) {
+                    if (
+                      typeof profile.associations[
+                        (<SnapshotObject>object).data.value
+                      ] !== 'undefined'
+                    ) {
+                      iconName =
+                        profile.associations[
+                          (<SnapshotObject>object).data.value
+                        ].icon
                     }
                   }
                 }
+              } else {
+                iconName = 'Minus'
               }
-              else {
-                iconName = 'Minus';
-              }
-              break;
+              break
             case 3:
-              iconName = 'Script';
-              break;
+              iconName = 'Script'
+              break
             case 4:
-              iconName = 'Clock';
-              break;
+              iconName = 'Clock'
+              break
             case 5:
-              iconName = 'Image';
-              break;
+              iconName = 'Image'
+              break
             case 6:
-              iconName = 'Link';
-              break;
+              iconName = 'Link'
+              break
           }
         }
       }
     }
-    return `${path}${iconName}.svg`;
+    return `${path}${iconName}.svg`
   }
 
   private buildUrl(path: string = '/api/', isSocket: boolean = false): string {
