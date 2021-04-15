@@ -1,0 +1,31 @@
+{
+  "name": "@brelag-schweiz-ag/knockaut_ts_api",
+  "version": "0.1.17",
+  "description": "API to communicate with Knockaut",
+  "author": "Severin Latkovic <severin@severila.ch>",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "lint": "eslint --ext .js,.ts src",
+    "lint-autofix": "eslint --ext .js,.ts src --fix"
+  },
+  "license": "ISC",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "vue": "^2.6.11",
+    "vuex": "^3.5.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^4.18.0",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1",
+    "typescript": "~4.2.3"
+  }
+}
