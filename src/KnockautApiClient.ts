@@ -208,7 +208,7 @@ export class KnockautApiClient {
         apiCredentials.username + ':' + apiCredentials.password
       ).toString('base64')
       this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
-      this.wsOptions.protocol.push(auth.replaceAll('=', '%3D'))
+      this.wsOptions.protocol = [auth.replaceAll('=', '%3D')]
       return true
     }
     return false
