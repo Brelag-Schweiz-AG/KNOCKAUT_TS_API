@@ -2,6 +2,7 @@
 declare const Buffer: any
 import axios, { AxiosRequestConfig } from 'axios'
 import { Store } from 'vuex'
+import { WebSocketMessageType } from './constants'
 
 const KnockautEndpoints = {
   GetConfigurators: 'WFC_GetConfigurators',
@@ -66,6 +67,13 @@ const WebSocketOptionsDefaults: WebSocketOptions = {
   protocol: [],
 }
 
+export interface WebSocketMessage {
+  Message: WebSocketMessageType
+  Data: (string | number | boolean)[]
+  SenderID: number
+  TimeStamp: number
+}
+
 // Custom listener for WebSocket actions
 export interface WebSocketListener {
   onclose: (ev: CloseEvent) => any
@@ -74,6 +82,11 @@ export interface WebSocketListener {
   onopen: (ev: Event) => any
   reconnect: (count: number) => any
   reconnectError: () => any
+  onFilteredMessage?: (
+    messageType: WebSocketMessageType,
+    message: WebSocketMessage
+  ) => void
+  acceptedMessageTypes?: WebSocketMessageType[]
 }
 
 // Set of AxiosHeaders for different Authentication credentials
@@ -195,7 +208,7 @@ export class KnockautApiClient {
         apiCredentials.username + ':' + apiCredentials.password
       ).toString('base64')
       this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
-      this.wsOptions.protocol.push(auth.replaceAll('=', '%3D'))
+      this.wsOptions.protocol = [auth.replaceAll('=', '%3D')]
       return true
     }
     return false
@@ -212,6 +225,18 @@ export class KnockautApiClient {
       `/wfc/${configuratorID}/api/`,
       true
     )
+  }
+
+  /**
+   * Closes current WebSocket connection
+   */
+  closeWebSocket() {
+    if (this.webSocket !== null) {
+      try {
+        this.webSocket.close()
+      } catch (ex) {}
+      this.webSocket = null
+    }
   }
 
   /**
@@ -234,7 +259,17 @@ export class KnockautApiClient {
     // Initialize internal handlers for websocket events
     this.webSocket.onmessage = (ev: MessageEvent) => {
       if (this.wsListener) {
-        this.wsListener.onmessage(ev)
+        if (
+          this.wsListener.acceptedMessageTypes &&
+          this.wsListener.onFilteredMessage
+        ) {
+          const data = JSON.parse(ev.data) as WebSocketMessage
+          if (this.wsListener.acceptedMessageTypes.indexOf(data.Message) > -1) {
+            this.wsListener.onFilteredMessage(data.Message, data)
+          }
+        } else {
+          this.wsListener.onmessage(ev)
+        }
       }
       if (this.store) {
         this.store.commit('SOCKET_ONMESSAGE', JSON.parse(ev.data))
@@ -255,7 +290,8 @@ export class KnockautApiClient {
       if (this.store) {
         this.store.commit('SOCKET_ONCLOSE', ev)
       }
-      if (this.wsOptions.reconnection) {
+      // Only reconnect if somebody is listening
+      if (this.wsOptions.reconnection && (this.store || this.wsListener)) {
         this.reconnect()
       }
     }
