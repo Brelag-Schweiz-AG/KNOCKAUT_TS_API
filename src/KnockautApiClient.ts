@@ -11,6 +11,7 @@ const KnockautEndpoints = {
 
   KnockautAuthenticate: 'KNO_Authenticate',
   GetConfigurations: 'KNO_GetConfigurations',
+  GetConfiguration: 'KNO_GetConfiguration',
   SetConfiguration: 'KNO_SetConfiguration',
   RunScene: 'KNO_RunScene',
   GetSceneConfig: 'KNO_GetSceneConfig',
@@ -436,6 +437,15 @@ export class KnockautApiClient {
    */
   async getConfigurations() {
     return await this.buildCall(KnockautEndpoints.GetConfigurations).execute()
+  }
+
+  /**
+   * Returns all deviceconfigurations
+   */
+  async getConfiguration(instanceId) {
+    return await this.buildCall(KnockautEndpoints.GetConfiguration, [
+      instanceId,
+    ]).execute()
   }
 
   /**
