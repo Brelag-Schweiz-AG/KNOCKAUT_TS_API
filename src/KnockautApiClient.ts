@@ -234,6 +234,7 @@ export class KnockautApiClient {
   closeWebSocket() {
     if (this.webSocket !== null) {
       try {
+        this.reconnectionCount = 100
         this.webSocket.close()
       } catch (ex) {}
       this.webSocket = null
