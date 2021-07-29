@@ -11,6 +11,7 @@ const KnockautEndpoints = {
 
   KnockautAuthenticate: 'KNO_Authenticate',
   GetConfigurations: 'KNO_GetConfigurations',
+  GetConfiguration: 'KNO_GetConfiguration',
   SetConfiguration: 'KNO_SetConfiguration',
   RunScene: 'KNO_RunScene',
   GetSceneConfig: 'KNO_GetSceneConfig',
@@ -233,6 +234,9 @@ export class KnockautApiClient {
   closeWebSocket() {
     if (this.webSocket !== null) {
       try {
+        /* Set to 100, to prevent imediate reconnection in the sockets onClose hook.
+        otherwise, socket immediately reconnects if <10 and store is connected. */
+        this.reconnectionCount = 100
         this.webSocket.close()
       } catch (ex) {}
       this.webSocket = null
@@ -436,6 +440,15 @@ export class KnockautApiClient {
    */
   async getConfigurations() {
     return await this.buildCall(KnockautEndpoints.GetConfigurations).execute()
+  }
+
+  /**
+   * Returns all deviceconfigurations
+   */
+  async getConfiguration(instanceId) {
+    return await this.buildCall(KnockautEndpoints.GetConfiguration, [
+      instanceId,
+    ]).execute()
   }
 
   /**
