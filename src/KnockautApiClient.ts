@@ -234,7 +234,7 @@ export class KnockautApiClient {
   closeWebSocket() {
     if (this.webSocket !== null) {
       try {
-        /* set to 100, to prevent imediate reconnection in the sockets onClose hook.
+        /* Set to 100, to prevent imediate reconnection in the sockets onClose hook.
         otherwise, socket immediately reconnects if <10 and store is connected. */
         this.reconnectionCount = 100
         this.webSocket.close()
