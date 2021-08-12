@@ -743,7 +743,7 @@ export class KnockautApiClient {
     }
   }
 
-  private buildCall(
+  buildCall(
     method: string,
     params: any[] = [],
     isExtendedCall: boolean = true
