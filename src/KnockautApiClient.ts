@@ -3,6 +3,7 @@ declare const Buffer: any
 import axios, { AxiosRequestConfig } from 'axios'
 import { Store } from 'vuex'
 import { WebSocketMessageType } from './constants'
+import { SymconLibrary, SymconModule } from './interfaces'
 
 const KnockautEndpoints = {
   GetConfigurators: 'WFC_GetConfigurators',
@@ -28,6 +29,13 @@ const KnockautEndpoints = {
   GetAppInfo: 'KNO_GetAppInfo',
   UpdateApp: 'KNO_UpdateApp',
   ChangePassword: 'KNO_ChangePassword',
+
+  GetLibraryList: 'IPS_GetLibraryList',
+  GetModule: 'IPS_GetModule',
+  GetLibrary: 'IPS_GetLibrary',
+  GetLibraryModules: 'IPS_GetLibraryModules',
+  GetModuleList: 'IPS_GetModuleList',
+  GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
 }
 
 // Connection options to Knockaut Backend
@@ -579,6 +587,56 @@ export class KnockautApiClient {
   }
 
   /**
+   * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarylist/
+   */
+  async getLibraryList(): Promise<string[]> {
+    return await this.buildCall(KnockautEndpoints.GetLibraryList).execute()
+  }
+
+  /**
+   * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodule/
+   */
+  async getModule(moduleId: string): Promise<SymconModule> {
+    return await this.buildCall(KnockautEndpoints.GetModule, [
+      moduleId,
+    ]).execute()
+  }
+
+  /**
+   * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrary/
+   */
+  async getLibrary(libraryId: string): Promise<SymconLibrary> {
+    return await this.buildCall(KnockautEndpoints.GetLibrary, [
+      libraryId,
+    ]).execute()
+  }
+
+  /**
+   * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarymodules/
+   */
+  async getLibraryModules(libraryId: string): Promise<string[]> {
+    return await this.buildCall(KnockautEndpoints.GetLibraryModules, [
+      libraryId,
+    ]).execute()
+  }
+
+  /**
+   * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodulelist/
+   */
+  async getModuleList(): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.GetModuleList).execute()
+  }
+
+  /**
+   * https://www.symcon.de/service/dokumentation/befehlsreferenz/instanzenverwaltung/ips-getinstancelistbymoduleid/
+   */
+  async getInstanceListByModuleID(moduleId: string): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.GetInstanceListByModuleID, [
+      moduleId,
+    ]).execute()
+  }
+
+  /**
    * Returns the icon-url for the given Object
    * @param object The IPSymcon Snapshot Object or the ID of the Object
    */
@@ -685,7 +743,7 @@ export class KnockautApiClient {
     }
   }
 
-  private buildCall(
+  buildCall(
     method: string,
     params: any[] = [],
     isExtendedCall: boolean = true
