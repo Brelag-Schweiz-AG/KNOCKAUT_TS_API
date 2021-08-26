@@ -29,6 +29,7 @@ const KnockautEndpoints = {
   GetAppInfo: 'KNO_GetAppInfo',
   UpdateApp: 'KNO_UpdateApp',
   ChangePassword: 'KNO_ChangePassword',
+  GetLoggedValues: 'KNO_GetLoggedValues',
 
   GetLibraryList: 'IPS_GetLibraryList',
   GetModule: 'IPS_GetModule',
@@ -584,6 +585,16 @@ export class KnockautApiClient {
    */
   async updateApp() {
     return await this.buildCall(KnockautEndpoints.UpdateApp).execute()
+  }
+
+  /**
+   * https://www.symcon.de/service/dokumentation/modulreferenz/archive-control/ac-getloggedvalues/
+   */
+  async getLoggedValues(parameters: Array<number>): Promise<string[]> {
+    return await this.buildCall(
+      KnockautEndpoints.GetLoggedValues,
+      parameters
+    ).execute()
   }
 
   /**
