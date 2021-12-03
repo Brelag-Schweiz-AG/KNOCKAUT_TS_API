@@ -37,6 +37,7 @@ const KnockautEndpoints = {
   GetLibraryModules: 'IPS_GetLibraryModules',
   GetModuleList: 'IPS_GetModuleList',
   GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
+  GetActionsByEnvironment: 'IPS_GetActionsByEnvironment',
 }
 
 // Connection options to Knockaut Backend
@@ -644,6 +645,24 @@ export class KnockautApiClient {
   async getInstanceListByModuleID(moduleId: string): Promise<any[]> {
     return await this.buildCall(KnockautEndpoints.GetInstanceListByModuleID, [
       moduleId,
+    ]).execute()
+  }
+
+  /**
+   * There is no specific documentation for this function.
+   * Actions: https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/aktionen/
+   * Parameters: https://www.symcon.de/service/dokumentation/befehlsreferenz/ablaufsteuerung/ips-runaction/
+   * function IPS_GetActionsByEnvironment(int $TargetID, string $Environment, bool $IncludeDefault)
+   */
+  async getActionsByEnvironment(
+    targetID: number,
+    environment: string,
+    includeDefault: boolean = true
+  ): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.GetActionsByEnvironment, [
+      targetID,
+      environment,
+      includeDefault,
     ]).execute()
   }
 
