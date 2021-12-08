@@ -38,6 +38,7 @@ const KnockautEndpoints = {
   GetModuleList: 'IPS_GetModuleList',
   GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
   GetActionsByEnvironment: 'IPS_GetActionsByEnvironment',
+  GetTranslatedActionsByEnvironment: 'IPS_GetTranslatedActionsByEnvironment',
 }
 
 // Connection options to Knockaut Backend
@@ -664,6 +665,18 @@ export class KnockautApiClient {
       environment,
       includeDefault,
     ]).execute()
+  }
+
+  async getTranslatedActionsByEnvironment(
+    targetID: number,
+    environment: string,
+    includeDefault: boolean = true,
+    languageCode: string = 'de'
+  ): Promise<any[]> {
+    return await this.buildCall(
+      KnockautEndpoints.GetTranslatedActionsByEnvironment,
+      [targetID, environment, includeDefault, languageCode]
+    ).execute()
   }
 
   /**
