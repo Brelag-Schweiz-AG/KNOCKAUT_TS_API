@@ -30,6 +30,8 @@ const KnockautEndpoints = {
   UpdateApp: 'KNO_UpdateApp',
   ChangePassword: 'KNO_ChangePassword',
   GetLoggedValues: 'KNO_GetLoggedValues',
+  GetFlowScriptData: 'KNO_GetFlowScriptData',
+  SyncFlowScript: 'KNO_SyncFlowScript',
 
   GetLibraryList: 'IPS_GetLibraryList',
   GetModule: 'IPS_GetModule',
@@ -677,6 +679,18 @@ export class KnockautApiClient {
       KnockautEndpoints.GetTranslatedActionsByEnvironment,
       [targetID, environment, includeDefault, languageCode]
     ).execute()
+  }
+
+  async getFlowScriptData(scriptID: number): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.GetFlowScriptData, [
+      scriptID,
+    ]).execute()
+  }
+
+  async syncFlowScript(data: any): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.SyncFlowScript, [
+      data,
+    ]).execute()
   }
 
   /**
