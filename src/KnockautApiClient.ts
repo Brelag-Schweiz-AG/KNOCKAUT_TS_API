@@ -32,6 +32,7 @@ const KnockautEndpoints = {
   GetLoggedValues: 'KNO_GetLoggedValues',
   GetFlowScriptData: 'KNO_GetFlowScriptData',
   SyncFlowScript: 'KNO_SyncFlowScript',
+  DeleteFlowScript: 'KNO_DeleteFlowScript',
 
   GetLibraryList: 'IPS_GetLibraryList',
   GetModule: 'IPS_GetModule',
@@ -690,6 +691,12 @@ export class KnockautApiClient {
   async syncFlowScript(data: any): Promise<any[]> {
     return await this.buildCall(KnockautEndpoints.SyncFlowScript, [
       data,
+    ]).execute()
+  }
+
+  async deleteFlowScript(flowscriptID: number): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.DeleteFlowScript, [
+      flowscriptID,
     ]).execute()
   }
 
