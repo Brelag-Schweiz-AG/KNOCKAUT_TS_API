@@ -24,6 +24,7 @@ const KnockautEndpoints = {
   GetSnapshotObject: 'KNO_GetSnapshotObject',
   SyncEvent: 'KNO_SyncEvent',
   DeleteEvent: 'KNO_DeleteEvent',
+  GetIcons: 'KNO_GetIcons',
   GetIconUrl: 'KNO_GetIconUrl',
   SyncFooterVars: 'KNO_SyncFooterVars',
   GetAppInfo: 'KNO_GetAppInfo',
@@ -707,7 +708,7 @@ export class KnockautApiClient {
    * it only reeturns the defined icons.
    */
   async getIcons(iconNames: string[] = []): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.DeleteFlowScript, [
+    return await this.buildCall(KnockautEndpoints.GetIcons, [
       iconNames,
     ]).execute()
   }
