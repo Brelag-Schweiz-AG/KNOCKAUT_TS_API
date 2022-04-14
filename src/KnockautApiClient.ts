@@ -701,6 +701,18 @@ export class KnockautApiClient {
   }
 
   /**
+   * Returns an array of object of which each has the icons "name" and "svg".
+   * If no parameter is set, it returns all the available icons.
+   * If an array of icon names is set as parameter,
+   * it only reeturns the defined icons.
+   */
+  async getIcons(iconNames: string[] = []): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.DeleteFlowScript, [
+      iconNames,
+    ]).execute()
+  }
+
+  /**
    * Returns the icon-url for the given Object
    * @param object The IPSymcon Snapshot Object or the ID of the Object
    */
