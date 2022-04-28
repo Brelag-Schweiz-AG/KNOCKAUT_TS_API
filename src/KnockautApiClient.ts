@@ -168,13 +168,17 @@ export class KnockautApiClient {
     this.configs.defaultApi = {
       headers: {
         'Content-Type': 'application/json',
-        //'X-CSRFTOKEN': '',
       },
       withCredentials: false,
       xsrfCookieName: 'csrftoken',
-      //xsrfHeaderName: 'X-CSRFTOKEN',
     }
-    this.configs.extendedApi = this.configs.defaultApi
+    this.configs.extendedApi = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: false,
+      xsrfCookieName: 'csrftoken',
+    }
     if (apiOptions.password && apiOptions.username) {
       const auth = Buffer.from(
         apiOptions.username + ':' + apiOptions.password

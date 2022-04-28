@@ -1,6 +1,6 @@
 {
   "name": "@brelag-schweiz-ag/knockaut_ts_api",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "description": "API to communicate with Knockaut",
   "author": "Severin Latkovic <severin@severila.ch>",
   "main": "dist/index.js",
