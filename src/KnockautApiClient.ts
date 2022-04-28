@@ -34,6 +34,7 @@ const KnockautEndpoints = {
   GetFlowScriptData: 'KNO_GetFlowScriptData',
   SyncFlowScript: 'KNO_SyncFlowScript',
   DeleteFlowScript: 'KNO_DeleteFlowScript',
+  InitSystemFolders: 'KNO_InitSystemFolders',
 
   GetLibraryList: 'IPS_GetLibraryList',
   GetModule: 'IPS_GetModule',
@@ -595,6 +596,14 @@ export class KnockautApiClient {
    */
   async updateApp() {
     return await this.buildCall(KnockautEndpoints.UpdateApp).execute()
+  }
+
+  /**
+   * Checks if all system folders exist and creates missing folders.
+   * @returns bool True if initialization was sucessful
+   */
+  async initSystemFolders(): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.InitSystemFolders).execute()
   }
 
   /**
