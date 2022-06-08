@@ -1,5 +1,4 @@
-// see https://stackoverflow.com/questions/38875401/getting-error-ts2304-cannot-find-name-buffer
-declare const Buffer: any
+import * as Buffer from 'buffer'
 import axios, { AxiosRequestConfig } from 'axios'
 import { Store } from 'vuex'
 import { WebSocketMessageType } from './constants'
@@ -181,7 +180,7 @@ export class KnockautApiClient {
       xsrfCookieName: 'csrftoken',
     }
     if (apiOptions.password && apiOptions.username) {
-      const auth = Buffer.from(
+      const auth = Buffer.Buffer.from(
         apiOptions.username + ':' + apiOptions.password
       ).toString('base64')
       this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
@@ -225,7 +224,7 @@ export class KnockautApiClient {
       apiCredentials.username = apiCredentials.username
         ? apiCredentials.username
         : 'webfront'
-      const auth = Buffer.from(
+      const auth = Buffer.Buffer.from(
         apiCredentials.username + ':' + apiCredentials.password
       ).toString('base64')
       this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
@@ -438,7 +437,7 @@ export class KnockautApiClient {
   async authorize(password: string) {
     try {
       if (password) {
-        const auth = Buffer.from('settings:' + password).toString('base64')
+        const auth = Buffer.Buffer.from('settings:' + password).toString('base64')
         this.configs.extendedApi.headers.Authorization = 'Basic ' + auth
         let response = await axios.post(
           this.buildUrl('/hook/knockaut/api/v1/'),
