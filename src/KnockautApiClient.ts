@@ -24,11 +24,17 @@ const KnockautEndpoints = {
   GetSnapshotObject: 'KNO_GetSnapshotObject',
   SyncEvent: 'KNO_SyncEvent',
   DeleteEvent: 'KNO_DeleteEvent',
+  GetIcons: 'KNO_GetIcons',
   GetIconUrl: 'KNO_GetIconUrl',
   SyncFooterVars: 'KNO_SyncFooterVars',
   GetAppInfo: 'KNO_GetAppInfo',
   UpdateApp: 'KNO_UpdateApp',
   ChangePassword: 'KNO_ChangePassword',
+  GetLoggedValues: 'KNO_GetLoggedValues',
+  GetFlowScriptData: 'KNO_GetFlowScriptData',
+  SyncFlowScript: 'KNO_SyncFlowScript',
+  DeleteFlowScript: 'KNO_DeleteFlowScript',
+  InitSystemFolders: 'KNO_InitSystemFolders',
 
   GetLibraryList: 'IPS_GetLibraryList',
   GetModule: 'IPS_GetModule',
@@ -36,6 +42,8 @@ const KnockautEndpoints = {
   GetLibraryModules: 'IPS_GetLibraryModules',
   GetModuleList: 'IPS_GetModuleList',
   GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
+  GetActionsByEnvironment: 'IPS_GetActionsByEnvironment',
+  GetTranslatedActionsByEnvironment: 'IPS_GetTranslatedActionsByEnvironment',
 }
 
 // Connection options to Knockaut Backend
@@ -161,13 +169,17 @@ export class KnockautApiClient {
     this.configs.defaultApi = {
       headers: {
         'Content-Type': 'application/json',
-        //'X-CSRFTOKEN': '',
       },
       withCredentials: false,
       xsrfCookieName: 'csrftoken',
-      //xsrfHeaderName: 'X-CSRFTOKEN',
     }
-    this.configs.extendedApi = this.configs.defaultApi
+    this.configs.extendedApi = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: false,
+      xsrfCookieName: 'csrftoken',
+    }
     if (apiOptions.password && apiOptions.username) {
       const auth = Buffer.from(
         apiOptions.username + ':' + apiOptions.password
@@ -587,6 +599,24 @@ export class KnockautApiClient {
   }
 
   /**
+   * Checks if all system folders exist and creates missing folders.
+   * @returns bool True if initialization was sucessful
+   */
+  async initSystemFolders(): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.InitSystemFolders).execute()
+  }
+
+  /**
+   * https://www.symcon.de/service/dokumentation/modulreferenz/archive-control/ac-getloggedvalues/
+   */
+  async getLoggedValues(parameters: Array<number>): Promise<string[]> {
+    return await this.buildCall(
+      KnockautEndpoints.GetLoggedValues,
+      parameters
+    ).execute()
+  }
+
+  /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarylist/
    */
   async getLibraryList(): Promise<string[]> {
@@ -633,6 +663,66 @@ export class KnockautApiClient {
   async getInstanceListByModuleID(moduleId: string): Promise<any[]> {
     return await this.buildCall(KnockautEndpoints.GetInstanceListByModuleID, [
       moduleId,
+    ]).execute()
+  }
+
+  /**
+   * There is no specific documentation for this function.
+   * Actions: https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/aktionen/
+   * Parameters: https://www.symcon.de/service/dokumentation/befehlsreferenz/ablaufsteuerung/ips-runaction/
+   * function IPS_GetActionsByEnvironment(int $TargetID, string $Environment, bool $IncludeDefault)
+   */
+  async getActionsByEnvironment(
+    targetID: number,
+    environment: string,
+    includeDefault: boolean = true
+  ): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.GetActionsByEnvironment, [
+      targetID,
+      environment,
+      includeDefault,
+    ]).execute()
+  }
+
+  async getTranslatedActionsByEnvironment(
+    targetID: number,
+    environment: string,
+    includeDefault: boolean = true,
+    languageCode: string = 'de'
+  ): Promise<any[]> {
+    return await this.buildCall(
+      KnockautEndpoints.GetTranslatedActionsByEnvironment,
+      [targetID, environment, includeDefault, languageCode]
+    ).execute()
+  }
+
+  async getFlowScriptData(scriptID: number): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.GetFlowScriptData, [
+      scriptID,
+    ]).execute()
+  }
+
+  async syncFlowScript(data: any): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.SyncFlowScript, [
+      data,
+    ]).execute()
+  }
+
+  async deleteFlowScript(flowscriptID: number): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.DeleteFlowScript, [
+      flowscriptID,
+    ]).execute()
+  }
+
+  /**
+   * Returns an array of object of which each has the icons "name" and "svg".
+   * If no parameter is set, it returns all the available icons.
+   * If an array of icon names is set as parameter,
+   * it only reeturns the defined icons.
+   */
+  async getIcons(iconNames: string[] = []): Promise<any[]> {
+    return await this.buildCall(KnockautEndpoints.GetIcons, [
+      iconNames,
     ]).execute()
   }
 
