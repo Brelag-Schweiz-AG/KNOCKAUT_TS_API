@@ -384,14 +384,14 @@ export class KnockautApiClient {
    * @param params Array of parameters for the given Method
    */
   async customRequest(method: string, params: any[] = []) {
-    return await this.buildCall(method, params, false).execute()
+    return this.buildCall(method, params, false).execute()
   }
 
   /**
    * Returns all configurators
    */
   async getConfigurators() {
-    return await this.buildCall(
+    return this.buildCall(
       KnockautEndpoints.GetConfigurators,
       [],
       false
@@ -401,13 +401,13 @@ export class KnockautApiClient {
   /**
    * Executes an WFC_Execute command
    */
-  async execute(command: WFCExecute) {
+  async execute(command: WFCExecute): Promise<any> {
     const params = []
     params.push(this.configuratorID)
     params.push(command.actionID)
     params.push(parseInt(command.targetID.toString()))
     params.push(command.value)
-    await this.buildCall(KnockautEndpoints.Execute, params, false).execute()
+    return this.buildCall(KnockautEndpoints.Execute, params, false).execute()
   }
 
   /**
@@ -419,7 +419,7 @@ export class KnockautApiClient {
         !configuratorID && this.configuratorID
           ? this.configuratorID
           : configuratorID
-      let response = await axios.post(
+      const response = await axios.post(
         this.buildUrl(),
         this.buildData(KnockautEndpoints.GetSnapshot, [configuratorID]),
         this.configs.defaultApi
@@ -437,7 +437,9 @@ export class KnockautApiClient {
   async authorize(password: string) {
     try {
       if (password) {
-        const auth = Buffer.Buffer.from('settings:' + password).toString('base64')
+        const auth = Buffer.Buffer.from('settings:' + password).toString(
+          'base64'
+        )
         this.configs.extendedApi.headers.Authorization = 'Basic ' + auth
         let response = await axios.post(
           this.buildUrl('/hook/knockaut/api/v1/'),
@@ -458,14 +460,14 @@ export class KnockautApiClient {
    * Returns all deviceconfigurations
    */
   async getConfigurations() {
-    return await this.buildCall(KnockautEndpoints.GetConfigurations).execute()
+    return this.buildCall(KnockautEndpoints.GetConfigurations).execute()
   }
 
   /**
    * Returns all deviceconfigurations
    */
   async getConfiguration(instanceId) {
-    return await this.buildCall(KnockautEndpoints.GetConfiguration, [
+    return this.buildCall(KnockautEndpoints.GetConfiguration, [
       instanceId,
     ]).execute()
   }
@@ -474,7 +476,7 @@ export class KnockautApiClient {
    * Sets a specific Device configuration
    */
   async setConfiguration(device) {
-    return await this.buildCall(KnockautEndpoints.SetConfiguration, [
+    return this.buildCall(KnockautEndpoints.SetConfiguration, [
       device,
     ]).execute()
   }
@@ -483,73 +485,63 @@ export class KnockautApiClient {
    * Runs the schript with the given id
    */
   async runScene(scriptID: number) {
-    return await this.buildCall(KnockautEndpoints.RunScene, [
-      scriptID,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.RunScene, [scriptID]).execute()
   }
 
   /**
    * Returns the configuration for the given house-automation-scene
    */
   async getSceneConfig(sceneID: number) {
-    return await this.buildCall(KnockautEndpoints.GetSceneConfig, [
-      sceneID,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.GetSceneConfig, [sceneID]).execute()
   }
 
   /**
    * Syncronizes a Scene. (add, edit, delete script-content)
    */
   async syncScene(scene) {
-    return await this.buildCall(KnockautEndpoints.SyncScene, [scene]).execute()
+    return this.buildCall(KnockautEndpoints.SyncScene, [scene]).execute()
   }
 
   /**
    * Deletes an entire Scene-Script
    */
   async deleteScene(sceneID: number) {
-    return await this.buildCall(KnockautEndpoints.DeleteScene, [
-      sceneID,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.DeleteScene, [sceneID]).execute()
   }
 
   /**
    * Returns the configuration for the given house-automation-scene
    */
   async getAlarms() {
-    return await this.buildCall(KnockautEndpoints.GetAlarms).execute()
+    return this.buildCall(KnockautEndpoints.GetAlarms).execute()
   }
 
   /**
    * Syncronizes a Scene. (add, edit, delete script-content)
    */
   async syncAlarm(alarm) {
-    return await this.buildCall(KnockautEndpoints.SyncAlarm, [alarm]).execute()
+    return this.buildCall(KnockautEndpoints.SyncAlarm, [alarm]).execute()
   }
 
   /**
    * Deletes an entire Scene-Script
    */
   async deleteAlarm(alarmID: number) {
-    return await this.buildCall(KnockautEndpoints.DeleteAlarm, [
-      alarmID,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.DeleteAlarm, [alarmID]).execute()
   }
 
   /**
    * Syncronizes an Event
    */
   async syncEvent(event) {
-    return await this.buildCall(KnockautEndpoints.SyncEvent, [event]).execute()
+    return this.buildCall(KnockautEndpoints.SyncEvent, [event]).execute()
   }
 
   /**
    * Deletes an entire Event
    */
   async deleteEvent(eventID: number) {
-    return await this.buildCall(KnockautEndpoints.DeleteEvent, [
-      eventID,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.DeleteEvent, [eventID]).execute()
   }
 
   /**
@@ -557,7 +549,7 @@ export class KnockautApiClient {
    * This function searches for existing Link-IDs, The new Links are created from variable-IDs
    */
   async syncFooterVars(variables: Array<FooterVariable>) {
-    return await this.buildCall(KnockautEndpoints.SyncFooterVars, [
+    return this.buildCall(KnockautEndpoints.SyncFooterVars, [
       variables,
     ]).execute()
   }
@@ -566,7 +558,7 @@ export class KnockautApiClient {
    * Returns an Object in the same Structure as it is in the Snapshot
    */
   async getSnapshotObject(objectID: number) {
-    return await this.buildCall(KnockautEndpoints.GetSnapshotObject, [
+    return this.buildCall(KnockautEndpoints.GetSnapshotObject, [
       objectID,
     ]).execute()
   }
@@ -575,7 +567,7 @@ export class KnockautApiClient {
    * Changes the settings password and returns an object with sucess or error messages
    */
   async changePassword(oldPassword: number, newPassword: number) {
-    return await this.buildCall(KnockautEndpoints.ChangePassword, [
+    return this.buildCall(KnockautEndpoints.ChangePassword, [
       {
         old: oldPassword,
         new: newPassword,
@@ -587,14 +579,14 @@ export class KnockautApiClient {
    * Returns an Object of AppInfos and alailable Update info
    */
   async getAppInfo() {
-    return await this.buildCall(KnockautEndpoints.GetAppInfo).execute()
+    return this.buildCall(KnockautEndpoints.GetAppInfo).execute()
   }
 
   /**
    * Returns true if the app was sucessfully updated
    */
   async updateApp() {
-    return await this.buildCall(KnockautEndpoints.UpdateApp).execute()
+    return this.buildCall(KnockautEndpoints.UpdateApp).execute()
   }
 
   /**
@@ -602,14 +594,14 @@ export class KnockautApiClient {
    * @returns bool True if initialization was sucessful
    */
   async initSystemFolders(): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.InitSystemFolders).execute()
+    return this.buildCall(KnockautEndpoints.InitSystemFolders).execute()
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/modulreferenz/archive-control/ac-getloggedvalues/
    */
   async getLoggedValues(parameters: Array<number>): Promise<string[]> {
-    return await this.buildCall(
+    return this.buildCall(
       KnockautEndpoints.GetLoggedValues,
       parameters
     ).execute()
@@ -619,32 +611,28 @@ export class KnockautApiClient {
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarylist/
    */
   async getLibraryList(): Promise<string[]> {
-    return await this.buildCall(KnockautEndpoints.GetLibraryList).execute()
+    return this.buildCall(KnockautEndpoints.GetLibraryList).execute()
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodule/
    */
   async getModule(moduleId: string): Promise<SymconModule> {
-    return await this.buildCall(KnockautEndpoints.GetModule, [
-      moduleId,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.GetModule, [moduleId]).execute()
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrary/
    */
   async getLibrary(libraryId: string): Promise<SymconLibrary> {
-    return await this.buildCall(KnockautEndpoints.GetLibrary, [
-      libraryId,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.GetLibrary, [libraryId]).execute()
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarymodules/
    */
   async getLibraryModules(libraryId: string): Promise<string[]> {
-    return await this.buildCall(KnockautEndpoints.GetLibraryModules, [
+    return this.buildCall(KnockautEndpoints.GetLibraryModules, [
       libraryId,
     ]).execute()
   }
@@ -653,14 +641,14 @@ export class KnockautApiClient {
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodulelist/
    */
   async getModuleList(): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.GetModuleList).execute()
+    return this.buildCall(KnockautEndpoints.GetModuleList).execute()
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/instanzenverwaltung/ips-getinstancelistbymoduleid/
    */
   async getInstanceListByModuleID(moduleId: string): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.GetInstanceListByModuleID, [
+    return this.buildCall(KnockautEndpoints.GetInstanceListByModuleID, [
       moduleId,
     ]).execute()
   }
@@ -676,7 +664,7 @@ export class KnockautApiClient {
     environment: string,
     includeDefault: boolean = true
   ): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.GetActionsByEnvironment, [
+    return this.buildCall(KnockautEndpoints.GetActionsByEnvironment, [
       targetID,
       environment,
       includeDefault,
@@ -689,26 +677,26 @@ export class KnockautApiClient {
     includeDefault: boolean = true,
     languageCode: string = 'de'
   ): Promise<any[]> {
-    return await this.buildCall(
-      KnockautEndpoints.GetTranslatedActionsByEnvironment,
-      [targetID, environment, includeDefault, languageCode]
-    ).execute()
+    return this.buildCall(KnockautEndpoints.GetTranslatedActionsByEnvironment, [
+      targetID,
+      environment,
+      includeDefault,
+      languageCode,
+    ]).execute()
   }
 
   async getFlowScriptData(scriptID: number): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.GetFlowScriptData, [
+    return this.buildCall(KnockautEndpoints.GetFlowScriptData, [
       scriptID,
     ]).execute()
   }
 
   async syncFlowScript(data: any): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.SyncFlowScript, [
-      data,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.SyncFlowScript, [data]).execute()
   }
 
   async deleteFlowScript(flowscriptID: number): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.DeleteFlowScript, [
+    return this.buildCall(KnockautEndpoints.DeleteFlowScript, [
       flowscriptID,
     ]).execute()
   }
@@ -720,9 +708,7 @@ export class KnockautApiClient {
    * it only reeturns the defined icons.
    */
   async getIcons(iconNames: string[] = []): Promise<any[]> {
-    return await this.buildCall(KnockautEndpoints.GetIcons, [
-      iconNames,
-    ]).execute()
+    return this.buildCall(KnockautEndpoints.GetIcons, [iconNames]).execute()
   }
 
   /**
@@ -754,9 +740,10 @@ export class KnockautApiClient {
       if (!iconName) {
         if ((<SnapshotObject>object).type == 6) {
           // Link
-          object = this.store.state.snapshot.result.objects[
-            'ID' + (<SnapshotObject>object).data.targetID
-          ]
+          object =
+            this.store.state.snapshot.result.objects[
+              'ID' + (<SnapshotObject>object).data.targetID
+            ]
           iconName = (<SnapshotObject>object).icon
         }
         if (!iconName) {
@@ -773,9 +760,8 @@ export class KnockautApiClient {
                 profileName = (<SnapshotObject>object).data.customProfile
               }
               if (profileName) {
-                var profile = this.store.state.snapshot.result.profiles[
-                  profileName
-                ]
+                var profile =
+                  this.store.state.snapshot.result.profiles[profileName]
                 if (profile) {
                   iconName = profile.icon
                 }
