@@ -1,4 +1,7 @@
 //MessageType
+
+import { WebSocketOptions } from './interfaces'
+
 //Typ der Websocket Nachricht
 export enum WebSocketMessageType {
   KR_CREATE = 10101, // Kernel wurde erstellt
@@ -112,4 +115,71 @@ export enum WebSocketMessageType {
   TM_REGISTER = 11401, // Timer wurde erstellt
   TM_UNREGISTER = 11402, // Timer wurde entfernt
   TM_CHANGEINTERVAL = 11403, // Timer Interval hat sich geändert
+}
+
+/** Functions that are accessible with a dashboard authentication */
+export const DashboardEndpoints = {
+  /** WFC Functions **/
+  WFC_GetConfigurators: 'WFC_GetConfigurators',
+  WFC_GetSnapshot: 'WFC_GetSnapshot',
+  WFC_Execute: 'WFC_Execute',
+  WFC_RegisterPNS: 'WFC_RegisterPNS',
+
+  /** Custom Helper Functions **/
+  GetAppInfo: 'KNO_GetAppInfo',
+  GetConfigurations: 'KNO_GetConfigurations',
+  GetConfiguration: 'KNO_GetConfiguration',
+  SetConfiguration: 'KNO_SetConfiguration',
+  GetIcons: 'KNO_GetIcons',
+  GetIconUrl: 'KNO_GetIconUrl',
+  GetSnapshotObject: 'KNO_GetSnapshotObject',
+  RunScene: 'KNO_RunScene',
+  UpdateApp: 'KNO_UpdateApp',
+  GetLoggedValues: 'KNO_GetLoggedValues',
+  InitSystemFolders: 'KNO_InitSystemFolders',
+
+  /** Default Symcon Functions **/
+  GetLibraryList: 'IPS_GetLibraryList',
+  GetModule: 'IPS_GetModule',
+  GetLibrary: 'IPS_GetLibrary',
+  GetLibraryModules: 'IPS_GetLibraryModules',
+  GetModuleList: 'IPS_GetModuleList',
+  GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
+  GetActionsByEnvironment: 'IPS_GetActionsByEnvironment',
+  GetTranslatedActionsByEnvironment: 'IPS_GetTranslatedActionsByEnvironment',
+
+  /** Symcon Notification Control **/
+  NC_AddDevice: 'NC_AddDevice',
+  NC_GetDevices: 'NC_GetDevices',
+  NC_RemoveDevice: 'NC_RemoveDevice',
+  NC_SetDeviceName: 'NC_SetDeviceName',
+}
+
+/** Functions that are accessible with an advanced settings authentication */
+export const AdvancedSettingsEndpoints = {
+  GetSceneConfig: 'KNO_GetSceneConfig',
+  SyncScene: 'KNO_SyncScene',
+  DeleteScene: 'KNO_DeleteScene',
+  GetAlarms: 'KNO_GetAlarms',
+  SyncAlarm: 'KNO_SyncAlarm',
+  DeleteAlarm: 'KNO_DeleteAlarm',
+  SyncEvent: 'KNO_SyncEvent',
+  DeleteEvent: 'KNO_DeleteEvent',
+  SyncFooterVars: 'KNO_SyncFooterVars',
+  ChangePassword: 'KNO_ChangePassword',
+  GetFlowScriptData: 'KNO_GetFlowScriptData',
+  SyncFlowScript: 'KNO_SyncFlowScript',
+  DeleteFlowScript: 'KNO_DeleteFlowScript',
+}
+
+// Default values
+export const WebSocketOptionsDefaults: WebSocketOptions = {
+  baseUrl: '',
+  specificUrl: '',
+  autoConnect: true,
+  reconnection: true,
+  format: 'json',
+  reconnectionAttempts: 10,
+  reconnectionDelay: 1000,
+  protocol: [],
 }
