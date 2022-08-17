@@ -17,6 +17,7 @@ import {
   WebSocketOptionsDefaults,
   DashboardEndpoints,
   AdvancedSettingsEndpoints,
+  WFC_Endpoints,
 } from './constants'
 
 /**
@@ -264,7 +265,7 @@ export class KnockautApiClient {
    * Returns all configurators
    */
   async getConfigurators() {
-    return this.executeApiCall(DashboardEndpoints.WFC_GetConfigurators)
+    return this.executeApiCall(WFC_Endpoints.WFC_GetConfigurators)
   }
 
   /**
@@ -276,7 +277,7 @@ export class KnockautApiClient {
     params.push(command.actionID)
     params.push(parseInt(command.targetID.toString()))
     params.push(command.value)
-    return this.executeApiCall(DashboardEndpoints.WFC_Execute, params)
+    return this.executeApiCall(WFC_Endpoints.WFC_Execute, params)
   }
 
   /**
@@ -287,9 +288,7 @@ export class KnockautApiClient {
       !configuratorID && this.configuratorID
         ? this.configuratorID
         : configuratorID
-    return this.executeApiCall(DashboardEndpoints.WFC_GetSnapshot, [
-      configuratorID,
-    ])
+    return this.executeApiCall(WFC_Endpoints.WFC_GetSnapshot, [configuratorID])
   }
 
   /**
@@ -531,7 +530,7 @@ export class KnockautApiClient {
     deviceID: string,
     name: string
   ): Promise<string> {
-    return this.executeApiCall(DashboardEndpoints.WFC_RegisterPNS, [
+    return this.executeApiCall(WFC_Endpoints.WFC_RegisterPNS, [
       instanceID,
       token,
       provider,
@@ -727,7 +726,8 @@ export class KnockautApiClient {
     try {
       const response = await axios.post(
         this.buildUrl(urlPath),
-        this.buildData(method, params)
+        this.buildData(method, params),
+        axiosConfig
       )
       if (response.data.error) {
         if (response.data.error.message) {

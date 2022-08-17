@@ -3,6 +3,7 @@ export {
   WebSocketMessageType,
   DashboardEndpoints,
   AdvancedSettingsEndpoints,
+  WFC_Endpoints,
 } from './constants'
 export {
   ApiOptions,

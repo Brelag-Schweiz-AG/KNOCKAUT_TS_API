@@ -117,14 +117,16 @@ export enum WebSocketMessageType {
   TM_CHANGEINTERVAL = 11403, // Timer Interval hat sich geändert
 }
 
-/** Functions that are accessible with a dashboard authentication */
-export const DashboardEndpoints = {
-  /** WFC Functions **/
+/** Default Symcon endpoints that use dashboard authentication **/
+export const WFC_Endpoints = {
   WFC_GetConfigurators: 'WFC_GetConfigurators',
   WFC_GetSnapshot: 'WFC_GetSnapshot',
   WFC_Execute: 'WFC_Execute',
   WFC_RegisterPNS: 'WFC_RegisterPNS',
+}
 
+/** Custom Knockaut Functions that are accessible with a dashboard authentication */
+export const DashboardEndpoints = {
   /** Custom Helper Functions **/
   GetAppInfo: 'KNO_GetAppInfo',
   GetConfigurations: 'KNO_GetConfigurations',
