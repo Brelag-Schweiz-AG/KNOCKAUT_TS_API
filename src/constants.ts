@@ -128,27 +128,28 @@ export const WFC_Endpoints = {
 /** Custom Knockaut Functions that are accessible with a dashboard authentication */
 export const DashboardEndpoints = {
   /** Custom Helper Functions **/
-  GetAppInfo: 'KNO_GetAppInfo',
-  GetConfigurations: 'KNO_GetConfigurations',
-  GetConfiguration: 'KNO_GetConfiguration',
-  SetConfiguration: 'KNO_SetConfiguration',
-  GetIcons: 'KNO_GetIcons',
-  GetIconUrl: 'KNO_GetIconUrl',
-  GetSnapshotObject: 'KNO_GetSnapshotObject',
-  RunScene: 'KNO_RunScene',
-  UpdateApp: 'KNO_UpdateApp',
-  GetLoggedValues: 'KNO_GetLoggedValues',
-  InitSystemFolders: 'KNO_InitSystemFolders',
+  KNO_GetAppInfo: 'KNO_GetAppInfo',
+  KNO_GetConfigurations: 'KNO_GetConfigurations',
+  KNO_GetConfiguration: 'KNO_GetConfiguration',
+  KNO_SetConfiguration: 'KNO_SetConfiguration',
+  KNO_GetIcons: 'KNO_GetIcons',
+  KNO_GetIconUrl: 'KNO_GetIconUrl',
+  KNO_GetSnapshotObject: 'KNO_GetSnapshotObject',
+  KNO_RunScene: 'KNO_RunScene',
+  KNO_UpdateApp: 'KNO_UpdateApp',
+  KNO_GetLoggedValues: 'KNO_GetLoggedValues',
+  KNO_InitSystemFolders: 'KNO_InitSystemFolders',
 
   /** Default Symcon Functions **/
-  GetLibraryList: 'IPS_GetLibraryList',
-  GetModule: 'IPS_GetModule',
-  GetLibrary: 'IPS_GetLibrary',
-  GetLibraryModules: 'IPS_GetLibraryModules',
-  GetModuleList: 'IPS_GetModuleList',
-  GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
-  GetActionsByEnvironment: 'IPS_GetActionsByEnvironment',
-  GetTranslatedActionsByEnvironment: 'IPS_GetTranslatedActionsByEnvironment',
+  IPS_GetLibraryList: 'IPS_GetLibraryList',
+  IPS_GetModule: 'IPS_GetModule',
+  IPS_GetLibrary: 'IPS_GetLibrary',
+  IPS_GetLibraryModules: 'IPS_GetLibraryModules',
+  IPS_GetModuleList: 'IPS_GetModuleList',
+  IPS_GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
+  IPS_GetActionsByEnvironment: 'IPS_GetActionsByEnvironment',
+  IPS_GetTranslatedActionsByEnvironment:
+    'IPS_GetTranslatedActionsByEnvironment',
 
   /** Symcon Notification Control **/
   NC_AddDevice: 'NC_AddDevice',
@@ -159,19 +160,19 @@ export const DashboardEndpoints = {
 
 /** Functions that are accessible with an advanced settings authentication */
 export const AdvancedSettingsEndpoints = {
-  GetSceneConfig: 'KNO_GetSceneConfig',
-  SyncScene: 'KNO_SyncScene',
-  DeleteScene: 'KNO_DeleteScene',
-  GetAlarms: 'KNO_GetAlarms',
-  SyncAlarm: 'KNO_SyncAlarm',
-  DeleteAlarm: 'KNO_DeleteAlarm',
-  SyncEvent: 'KNO_SyncEvent',
-  DeleteEvent: 'KNO_DeleteEvent',
-  SyncFooterVars: 'KNO_SyncFooterVars',
-  ChangePassword: 'KNO_ChangePassword',
-  GetFlowScriptData: 'KNO_GetFlowScriptData',
-  SyncFlowScript: 'KNO_SyncFlowScript',
-  DeleteFlowScript: 'KNO_DeleteFlowScript',
+  KNO_GetSceneConfig: 'KNO_GetSceneConfig',
+  KNO_SyncScene: 'KNO_SyncScene',
+  KNO_DeleteScene: 'KNO_DeleteScene',
+  KNO_GetAlarms: 'KNO_GetAlarms',
+  KNO_SyncAlarm: 'KNO_SyncAlarm',
+  KNO_DeleteAlarm: 'KNO_DeleteAlarm',
+  KNO_SyncEvent: 'KNO_SyncEvent',
+  KNO_DeleteEvent: 'KNO_DeleteEvent',
+  KNO_SyncFooterVars: 'KNO_SyncFooterVars',
+  KNO_ChangePassword: 'KNO_ChangePassword',
+  KNO_GetFlowScriptData: 'KNO_GetFlowScriptData',
+  KNO_SyncFlowScript: 'KNO_SyncFlowScript',
+  KNO_DeleteFlowScript: 'KNO_DeleteFlowScript',
 }
 
 // Default values

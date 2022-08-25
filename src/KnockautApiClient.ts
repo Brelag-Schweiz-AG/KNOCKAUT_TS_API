@@ -295,14 +295,14 @@ export class KnockautApiClient {
    * Returns all deviceconfigurations
    */
   async getConfigurations() {
-    return this.executeApiCall(DashboardEndpoints.GetConfigurations)
+    return this.executeApiCall(DashboardEndpoints.KNO_GetConfigurations)
   }
 
   /**
    * Returns all deviceconfigurations
    */
   async getConfiguration(instanceId) {
-    return this.executeApiCall(DashboardEndpoints.GetConfiguration, [
+    return this.executeApiCall(DashboardEndpoints.KNO_GetConfiguration, [
       instanceId,
     ])
   }
@@ -311,21 +311,23 @@ export class KnockautApiClient {
    * Sets a specific Device configuration
    */
   async setConfiguration(device) {
-    return this.executeApiCall(DashboardEndpoints.SetConfiguration, [device])
+    return this.executeApiCall(DashboardEndpoints.KNO_SetConfiguration, [
+      device,
+    ])
   }
 
   /**
    * Runs the schript with the given id
    */
   async runScene(scriptID: number) {
-    return this.executeApiCall(DashboardEndpoints.RunScene, [scriptID])
+    return this.executeApiCall(DashboardEndpoints.KNO_RunScene, [scriptID])
   }
 
   /**
    * Returns the configuration for the given house-automation-scene
    */
   async getSceneConfig(sceneID: number) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.GetSceneConfig, [
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_GetSceneConfig, [
       sceneID,
     ])
   }
@@ -334,49 +336,55 @@ export class KnockautApiClient {
    * Syncronizes a Scene. (add, edit, delete script-content)
    */
   async syncScene(scene) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.SyncScene, [scene])
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncScene, [scene])
   }
 
   /**
    * Deletes an entire Scene-Script
    */
   async deleteScene(sceneID: number) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.DeleteScene, [sceneID])
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteScene, [
+      sceneID,
+    ])
   }
 
   /**
    * Returns the configuration for the given house-automation-scene
    */
   async getAlarms() {
-    return this.executeApiCall(AdvancedSettingsEndpoints.GetAlarms)
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_GetAlarms)
   }
 
   /**
    * Syncronizes a Scene. (add, edit, delete script-content)
    */
   async syncAlarm(alarm) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.SyncAlarm, [alarm])
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncAlarm, [alarm])
   }
 
   /**
    * Deletes an entire Scene-Script
    */
   async deleteAlarm(alarmID: number) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.DeleteAlarm, [alarmID])
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteAlarm, [
+      alarmID,
+    ])
   }
 
   /**
    * Syncronizes an Event
    */
   async syncEvent(event) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.SyncEvent, [event])
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncEvent, [event])
   }
 
   /**
    * Deletes an entire Event
    */
   async deleteEvent(eventID: number) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.DeleteEvent, [eventID])
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteEvent, [
+      eventID,
+    ])
   }
 
   /**
@@ -384,7 +392,7 @@ export class KnockautApiClient {
    * This function searches for existing Link-IDs, The new Links are created from variable-IDs
    */
   async syncFooterVars(variables: Array<FooterVariable>) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.SyncFooterVars, [
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncFooterVars, [
       variables,
     ])
   }
@@ -393,14 +401,16 @@ export class KnockautApiClient {
    * Returns an Object in the same Structure as it is in the Snapshot
    */
   async getSnapshotObject(objectID: number) {
-    return this.executeApiCall(DashboardEndpoints.GetSnapshotObject, [objectID])
+    return this.executeApiCall(DashboardEndpoints.KNO_GetSnapshotObject, [
+      objectID,
+    ])
   }
 
   /**
    * Changes the settings password and returns an object with sucess or error messages
    */
   async changePassword(oldPassword: number, newPassword: number) {
-    return this.executeApiCall(AdvancedSettingsEndpoints.ChangePassword, [
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_ChangePassword, [
       {
         old: oldPassword,
         new: newPassword,
@@ -412,14 +422,14 @@ export class KnockautApiClient {
    * Returns an Object of AppInfos and alailable Update info
    */
   async getAppInfo() {
-    return this.executeApiCall(DashboardEndpoints.GetAppInfo)
+    return this.executeApiCall(DashboardEndpoints.KNO_GetAppInfo)
   }
 
   /**
    * Returns true if the app was sucessfully updated
    */
   async updateApp() {
-    return this.executeApiCall(DashboardEndpoints.UpdateApp)
+    return this.executeApiCall(DashboardEndpoints.KNO_UpdateApp)
   }
 
   /**
@@ -427,42 +437,45 @@ export class KnockautApiClient {
    * @returns bool True if initialization was sucessful
    */
   async initSystemFolders(): Promise<any[]> {
-    return this.executeApiCall(DashboardEndpoints.InitSystemFolders)
+    return this.executeApiCall(DashboardEndpoints.KNO_InitSystemFolders)
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/modulreferenz/archive-control/ac-getloggedvalues/
    */
   async getLoggedValues(parameters: Array<number>): Promise<string[]> {
-    return this.executeApiCall(DashboardEndpoints.GetLoggedValues, parameters)
+    return this.executeApiCall(
+      DashboardEndpoints.KNO_GetLoggedValues,
+      parameters
+    )
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarylist/
    */
   async getLibraryList(): Promise<string[]> {
-    return this.executeApiCall(DashboardEndpoints.GetLibraryList)
+    return this.executeApiCall(DashboardEndpoints.IPS_GetLibraryList)
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodule/
    */
   async getModule(moduleId: string): Promise<SymconModule> {
-    return this.executeApiCall(DashboardEndpoints.GetModule, [moduleId])
+    return this.executeApiCall(DashboardEndpoints.IPS_GetModule, [moduleId])
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrary/
    */
   async getLibrary(libraryId: string): Promise<SymconLibrary> {
-    return this.executeApiCall(DashboardEndpoints.GetLibrary, [libraryId])
+    return this.executeApiCall(DashboardEndpoints.IPS_GetLibrary, [libraryId])
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarymodules/
    */
   async getLibraryModules(libraryId: string): Promise<string[]> {
-    return this.executeApiCall(DashboardEndpoints.GetLibraryModules, [
+    return this.executeApiCall(DashboardEndpoints.IPS_GetLibraryModules, [
       libraryId,
     ])
   }
@@ -471,16 +484,17 @@ export class KnockautApiClient {
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodulelist/
    */
   async getModuleList(): Promise<any[]> {
-    return this.executeApiCall(DashboardEndpoints.GetModuleList)
+    return this.executeApiCall(DashboardEndpoints.IPS_GetModuleList)
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/instanzenverwaltung/ips-getinstancelistbymoduleid/
    */
   async getInstanceListByModuleID(moduleId: string): Promise<any[]> {
-    return this.executeApiCall(DashboardEndpoints.GetInstanceListByModuleID, [
-      moduleId,
-    ])
+    return this.executeApiCall(
+      DashboardEndpoints.IPS_GetInstanceListByModuleID,
+      [moduleId]
+    )
   }
 
   async NC_AddDevice(
@@ -507,7 +521,7 @@ export class KnockautApiClient {
 
   async NC_RemoveDevice(
     instanceID: number,
-    deviceID: number
+    deviceID: string
   ): Promise<boolean> {
     return this.executeApiCall(DashboardEndpoints.NC_RemoveDevice, [
       instanceID,
@@ -517,10 +531,14 @@ export class KnockautApiClient {
 
   async NC_SetDeviceName(
     instanceID: number,
-    deviceID: number,
+    deviceID: string,
     name: string
   ): Promise<boolean> {
-    return this.executeApiCall(DashboardEndpoints.NC_SetDeviceName)
+    return this.executeApiCall(DashboardEndpoints.NC_SetDeviceName, [
+      instanceID,
+      deviceID,
+      name,
+    ])
   }
 
   async WFC_RegisterPNS(
@@ -550,7 +568,7 @@ export class KnockautApiClient {
     environment: string,
     includeDefault: boolean = true
   ): Promise<any[]> {
-    return this.executeApiCall(DashboardEndpoints.GetActionsByEnvironment, [
+    return this.executeApiCall(DashboardEndpoints.IPS_GetActionsByEnvironment, [
       targetID,
       environment,
       includeDefault,
@@ -564,23 +582,26 @@ export class KnockautApiClient {
     languageCode: string = 'de'
   ): Promise<any[]> {
     return this.executeApiCall(
-      DashboardEndpoints.GetTranslatedActionsByEnvironment,
+      DashboardEndpoints.IPS_GetTranslatedActionsByEnvironment,
       [targetID, environment, includeDefault, languageCode]
     )
   }
 
   async getFlowScriptData(scriptID: number): Promise<any[]> {
-    return this.executeApiCall(AdvancedSettingsEndpoints.GetFlowScriptData, [
-      scriptID,
-    ])
+    return this.executeApiCall(
+      AdvancedSettingsEndpoints.KNO_GetFlowScriptData,
+      [scriptID]
+    )
   }
 
   async syncFlowScript(data: any): Promise<any[]> {
-    return this.executeApiCall(AdvancedSettingsEndpoints.SyncFlowScript, [data])
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncFlowScript, [
+      data,
+    ])
   }
 
   async deleteFlowScript(flowscriptID: number): Promise<any[]> {
-    return this.executeApiCall(AdvancedSettingsEndpoints.DeleteFlowScript, [
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteFlowScript, [
       flowscriptID,
     ])
   }
@@ -592,7 +613,7 @@ export class KnockautApiClient {
    * it only reeturns the defined icons.
    */
   async getIcons(iconNames: string[] = []): Promise<any[]> {
-    return this.executeApiCall(DashboardEndpoints.GetIcons, [iconNames])
+    return this.executeApiCall(DashboardEndpoints.KNO_GetIcons, [iconNames])
   }
 
   /**
@@ -601,7 +622,7 @@ export class KnockautApiClient {
    */
   getIcon(object: SnapshotObject | number | string) {
     // object can be either a snapshot-object, an ObjectID (int), or just an icon name (string)
-    var iconName = this.getIconLocal(object, '')
+    const iconName = this.getIconLocal(object, '')
     if (iconName.startsWith('BRELAG')) {
       return `${this.host}/skins/${this.skin}/icons/${iconName}`
     }
@@ -612,20 +633,20 @@ export class KnockautApiClient {
     object: SnapshotObject | number | string,
     path: string = '@/assets/icons/'
   ) {
-    var iconName = ''
+    let iconName = ''
     if (Number.isNaN(parseInt(<string>object)) && typeof object !== 'object') {
       iconName = <string>object
     } else {
       if (!Number.isNaN(parseInt(<string>object))) {
-        var objectID = object
-        object = this.store.state.snapshot.result.objects['ID' + objectID]
+        const objectID = object
+        object = this.store.state.snapshot.objects['ID' + objectID]
       }
       iconName = (<SnapshotObject>object).icon
       if (!iconName) {
         if ((<SnapshotObject>object).type == 6) {
           // Link
           object =
-            this.store.state.snapshot.result.objects[
+            this.store.state.snapshot.objects[
               'ID' + (<SnapshotObject>object).data.targetID
             ]
           iconName = (<SnapshotObject>object).icon
@@ -639,13 +660,12 @@ export class KnockautApiClient {
               iconName = 'Plug'
               break
             case 2:
-              var profileName = (<SnapshotObject>object).data.profile
+              let profileName = (<SnapshotObject>object).data.profile
               if ((<SnapshotObject>object).data.customProfile) {
                 profileName = (<SnapshotObject>object).data.customProfile
               }
               if (profileName) {
-                var profile =
-                  this.store.state.snapshot.result.profiles[profileName]
+                const profile = this.store.state.snapshot.profiles[profileName]
                 if (profile) {
                   iconName = profile.icon
                 }
@@ -720,8 +740,12 @@ export class KnockautApiClient {
       params = [this.configuratorID].concat(params)
       axiosConfig.headers.Authorization = this.advancedSettingsAuthorization
     } else {
-      axiosConfig.headers.Authorization = this.apiAuthorization
       urlPath = '/api/'
+      if (WFC_Endpoints[method]) {
+        axiosConfig.headers.Authorization = this.dashboardAuthorization
+      } else {
+        axiosConfig.headers.Authorization = this.apiAuthorization
+      }
     }
     try {
       const response = await axios.post(
