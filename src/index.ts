@@ -1,8 +1,13 @@
+export { KnockautApiClient } from './KnockautApiClient'
 export {
-  KnockautApiClient,
+  WebSocketMessageType,
+  DashboardEndpoints,
+  AdvancedSettingsEndpoints,
+  WFC_Endpoints,
+} from './constants'
+export {
   ApiOptions,
   WebSocketOptions,
   WebSocketListener,
   WebSocketMessage,
-} from './KnockautApiClient'
-export { WebSocketMessageType } from './constants'
+} from './interfaces'

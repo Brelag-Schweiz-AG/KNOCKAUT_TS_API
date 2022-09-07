@@ -1,152 +1,29 @@
 import * as Buffer from 'buffer'
 import axios, { AxiosRequestConfig } from 'axios'
 import { Store } from 'vuex'
-import { WebSocketMessageType } from './constants'
-import { SymconLibrary, SymconModule } from './interfaces'
-
-const KnockautEndpoints = {
-  GetConfigurators: 'WFC_GetConfigurators',
-  GetSnapshot: 'WFC_GetSnapshot',
-  Execute: 'WFC_Execute',
-
-  KnockautAuthenticate: 'KNO_Authenticate',
-  GetConfigurations: 'KNO_GetConfigurations',
-  GetConfiguration: 'KNO_GetConfiguration',
-  SetConfiguration: 'KNO_SetConfiguration',
-  RunScene: 'KNO_RunScene',
-  GetSceneConfig: 'KNO_GetSceneConfig',
-  SyncScene: 'KNO_SyncScene',
-  DeleteScene: 'KNO_DeleteScene',
-  GetAlarms: 'KNO_GetAlarms',
-  SyncAlarm: 'KNO_SyncAlarm',
-  DeleteAlarm: 'KNO_DeleteAlarm',
-  GetSnapshotObject: 'KNO_GetSnapshotObject',
-  SyncEvent: 'KNO_SyncEvent',
-  DeleteEvent: 'KNO_DeleteEvent',
-  GetIcons: 'KNO_GetIcons',
-  GetIconUrl: 'KNO_GetIconUrl',
-  SyncFooterVars: 'KNO_SyncFooterVars',
-  GetAppInfo: 'KNO_GetAppInfo',
-  UpdateApp: 'KNO_UpdateApp',
-  ChangePassword: 'KNO_ChangePassword',
-  GetLoggedValues: 'KNO_GetLoggedValues',
-  GetFlowScriptData: 'KNO_GetFlowScriptData',
-  SyncFlowScript: 'KNO_SyncFlowScript',
-  DeleteFlowScript: 'KNO_DeleteFlowScript',
-  InitSystemFolders: 'KNO_InitSystemFolders',
-
-  GetLibraryList: 'IPS_GetLibraryList',
-  GetModule: 'IPS_GetModule',
-  GetLibrary: 'IPS_GetLibrary',
-  GetLibraryModules: 'IPS_GetLibraryModules',
-  GetModuleList: 'IPS_GetModuleList',
-  GetInstanceListByModuleID: 'IPS_GetInstanceListByModuleID',
-  GetActionsByEnvironment: 'IPS_GetActionsByEnvironment',
-  GetTranslatedActionsByEnvironment: 'IPS_GetTranslatedActionsByEnvironment',
-}
-
-// Connection options to Knockaut Backend
-export interface ApiOptions {
-  host: string
-  password?: string
-  username?: string
-  skin?: string
-}
-
-// Connection options to Knockaut Backend
-export interface ApiCredentials {
-  password: string
-  username?: string
-}
-
-// Configuration for WebSocket Connection
-export interface WebSocketOptions {
-  baseUrl: string
-  specificUrl: string
-  autoConnect?: boolean
-  reconnection?: boolean
-  format?: string
-  reconnectionAttempts?: number
-  reconnectionDelay?: number
-  protocol?: string[]
-}
-
-// Default values
-const WebSocketOptionsDefaults: WebSocketOptions = {
-  baseUrl: '',
-  specificUrl: '',
-  autoConnect: true,
-  reconnection: true,
-  format: 'json',
-  reconnectionAttempts: 10,
-  reconnectionDelay: 1000,
-  protocol: [],
-}
-
-export interface WebSocketMessage {
-  Message: WebSocketMessageType
-  Data: (string | number | boolean)[]
-  SenderID: number
-  TimeStamp: number
-}
-
-// Custom listener for WebSocket actions
-export interface WebSocketListener {
-  onclose: (ev: CloseEvent) => any
-  onerror: (ev: Event) => any
-  onmessage: (ev: MessageEvent) => any
-  onopen: (ev: Event) => any
-  reconnect: (count: number) => any
-  reconnectError: () => any
-  onFilteredMessage?: (
-    messageType: WebSocketMessageType,
-    message: WebSocketMessage
-  ) => void
-  acceptedMessageTypes?: WebSocketMessageType[]
-}
-
-// Set of AxiosHeaders for different Authentication credentials
-export interface KnockautHeaderConfigs {
-  defaultApi: AxiosRequestConfig
-  extendedApi: AxiosRequestConfig
-}
-
-const DefaultKnockautHeaderConfigs: KnockautHeaderConfigs = {
-  defaultApi: {},
-  extendedApi: {},
-}
-
-interface SnapshotObject {
-  data: any
-  disabled: boolean
-  hidden: boolean
-  icon: string
-  ident: string
-  info: string
-  name: string
-  parentID: number
-  position: number
-  readOnly: boolean
-  summary: string
-  type: number
-}
-
-interface WFCExecute {
-  actionID: number
-  targetID: number
-  value: number | boolean | string
-}
-
-interface FooterVariable {
-  id: number
-  name: string
-}
+import {
+  ApiCredentials,
+  ApiOptions,
+  FooterVariable,
+  SnapshotObject,
+  SymconLibrary,
+  SymconModule,
+  WebSocketListener,
+  WebSocketMessage,
+  WebSocketOptions,
+  WFCExecute,
+} from './interfaces'
+import {
+  WebSocketOptionsDefaults,
+  DashboardEndpoints,
+  AdvancedSettingsEndpoints,
+  WFC_Endpoints,
+} from './constants'
 
 /**
  * ApiClient responsible for all communication to Knockaut Backend
  */
 export class KnockautApiClient {
-  private configs: KnockautHeaderConfigs = DefaultKnockautHeaderConfigs
   private host: string
   private wsOptions: WebSocketOptions
   private wsListener: WebSocketListener = null
@@ -157,6 +34,13 @@ export class KnockautApiClient {
   private store: Store<any>
   private skin: string
 
+  // Authorization for default API calls using remote access login
+  private apiAuthorization: string = null
+  // Authorization for dashboard functions (Ultimate App)
+  private dashboardAuthorization: string = null
+  // Authorization for advanced settings functions (Ultimate App)
+  private advancedSettingsAuthorization: string = null
+
   constructor(
     apiOptions: ApiOptions,
     webSocketOptions: WebSocketOptions,
@@ -165,25 +49,11 @@ export class KnockautApiClient {
   ) {
     this.host = apiOptions.host
 
-    this.configs.defaultApi = {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      withCredentials: false,
-      xsrfCookieName: 'csrftoken',
-    }
-    this.configs.extendedApi = {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      withCredentials: false,
-      xsrfCookieName: 'csrftoken',
-    }
     if (apiOptions.password && apiOptions.username) {
       const auth = Buffer.Buffer.from(
         apiOptions.username + ':' + apiOptions.password
       ).toString('base64')
-      this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
+      this.apiAuthorization = 'Basic ' + auth
     }
     if (apiOptions.skin) {
       this.skin = apiOptions.skin
@@ -216,22 +86,27 @@ export class KnockautApiClient {
     return this.host
   }
 
-  /**
-   * Login after construction. (use for public/private access)
-   */
-  async setCredentials(apiCredentials: ApiCredentials) {
-    if (apiCredentials.password) {
-      apiCredentials.username = apiCredentials.username
-        ? apiCredentials.username
-        : 'webfront'
-      const auth = Buffer.Buffer.from(
-        apiCredentials.username + ':' + apiCredentials.password
-      ).toString('base64')
-      this.configs.defaultApi.headers.Authorization = 'Basic ' + auth
-      this.wsOptions.protocol = [auth.replaceAll('=', '%3D')]
-      return true
-    }
-    return false
+  /** Sets password to access advanced settings functions */
+  setAdvancedSettingsPassword(password: string) {
+    const auth = Buffer.Buffer.from('settings:' + password).toString('base64')
+    // TODO: Should we verify password first and throw error?
+    this.advancedSettingsAuthorization = 'Basic ' + auth
+  }
+
+  /** Sets password to access dashboard functions */
+  setDashboardPassword(password: string) {
+    const auth = Buffer.Buffer.from('webfront:' + password).toString('base64')
+    // TODO: Should we verify password first and throw error?
+    this.dashboardAuthorization = 'Basic ' + auth
+    this.wsOptions.protocol = [auth.replaceAll('=', '%3D')]
+  }
+
+  /** Sets password to access default Symcon API */
+  setApiCredentials(apiCredentials: ApiCredentials) {
+    const auth = Buffer.Buffer.from(
+      apiCredentials.username + ':' + apiCredentials.password
+    ).toString('base64')
+    this.apiAuthorization = 'Basic ' + auth
   }
 
   /**
@@ -346,7 +221,7 @@ export class KnockautApiClient {
    * Send any object to websocket channel
    * @param obj
    */
-  sendObj(obj: any): void {
+  sendWebsocketObject(obj: any): void {
     return this.webSocket.send(JSON.stringify(obj))
   }
 
@@ -384,18 +259,14 @@ export class KnockautApiClient {
    * @param params Array of parameters for the given Method
    */
   async customRequest(method: string, params: any[] = []) {
-    return this.buildCall(method, params, false).execute()
+    return this.executeApiCall(method, params)
   }
 
   /**
    * Returns all configurators
    */
   async getConfigurators() {
-    return this.buildCall(
-      KnockautEndpoints.GetConfigurators,
-      [],
-      false
-    ).execute()
+    return this.executeApiCall(WFC_Endpoints.WFC_GetConfigurators)
   }
 
   /**
@@ -407,141 +278,114 @@ export class KnockautApiClient {
     params.push(command.actionID)
     params.push(parseInt(command.targetID.toString()))
     params.push(command.value)
-    return this.buildCall(KnockautEndpoints.Execute, params, false).execute()
+    return this.executeApiCall(WFC_Endpoints.WFC_Execute, params)
   }
 
   /**
    * Returns an actual snapshot for the given configurator
    */
   async getSnapshot(configuratorID: number = 0) {
-    try {
-      configuratorID =
-        !configuratorID && this.configuratorID
-          ? this.configuratorID
-          : configuratorID
-      const response = await axios.post(
-        this.buildUrl(),
-        this.buildData(KnockautEndpoints.GetSnapshot, [configuratorID]),
-        this.configs.defaultApi
-      )
-      // TODO: Define interface for returned type
-      return response.data
-    } catch (error) {
-      this.handleError(error)
-    }
-  }
-
-  /**
-   * Authenticates the user for the settings area. This is not the default api authentication
-   */
-  async authorize(password: string) {
-    try {
-      if (password) {
-        const auth = Buffer.Buffer.from('settings:' + password).toString(
-          'base64'
-        )
-        this.configs.extendedApi.headers.Authorization = 'Basic ' + auth
-        let response = await axios.post(
-          this.buildUrl('/hook/knockaut/api/v1/'),
-          this.buildData(KnockautEndpoints.KnockautAuthenticate, [
-            this.configuratorID,
-          ]),
-          this.configs.extendedApi
-        )
-        // TODO: Define interface for returned type
-        return response.data
-      }
-    } catch (error) {
-      return false
-    }
+    configuratorID =
+      !configuratorID && this.configuratorID
+        ? this.configuratorID
+        : configuratorID
+    return this.executeApiCall(WFC_Endpoints.WFC_GetSnapshot, [configuratorID])
   }
 
   /**
    * Returns all deviceconfigurations
    */
   async getConfigurations() {
-    return this.buildCall(KnockautEndpoints.GetConfigurations).execute()
+    return this.executeApiCall(DashboardEndpoints.KNO_GetConfigurations)
   }
 
   /**
    * Returns all deviceconfigurations
    */
   async getConfiguration(instanceId) {
-    return this.buildCall(KnockautEndpoints.GetConfiguration, [
+    return this.executeApiCall(DashboardEndpoints.KNO_GetConfiguration, [
       instanceId,
-    ]).execute()
+    ])
   }
 
   /**
    * Sets a specific Device configuration
    */
   async setConfiguration(device) {
-    return this.buildCall(KnockautEndpoints.SetConfiguration, [
+    return this.executeApiCall(DashboardEndpoints.KNO_SetConfiguration, [
       device,
-    ]).execute()
+    ])
   }
 
   /**
    * Runs the schript with the given id
    */
   async runScene(scriptID: number) {
-    return this.buildCall(KnockautEndpoints.RunScene, [scriptID]).execute()
+    return this.executeApiCall(DashboardEndpoints.KNO_RunScene, [scriptID])
   }
 
   /**
    * Returns the configuration for the given house-automation-scene
    */
   async getSceneConfig(sceneID: number) {
-    return this.buildCall(KnockautEndpoints.GetSceneConfig, [sceneID]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_GetSceneConfig, [
+      sceneID,
+    ])
   }
 
   /**
    * Syncronizes a Scene. (add, edit, delete script-content)
    */
   async syncScene(scene) {
-    return this.buildCall(KnockautEndpoints.SyncScene, [scene]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncScene, [scene])
   }
 
   /**
    * Deletes an entire Scene-Script
    */
   async deleteScene(sceneID: number) {
-    return this.buildCall(KnockautEndpoints.DeleteScene, [sceneID]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteScene, [
+      sceneID,
+    ])
   }
 
   /**
    * Returns the configuration for the given house-automation-scene
    */
   async getAlarms() {
-    return this.buildCall(KnockautEndpoints.GetAlarms).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_GetAlarms)
   }
 
   /**
    * Syncronizes a Scene. (add, edit, delete script-content)
    */
   async syncAlarm(alarm) {
-    return this.buildCall(KnockautEndpoints.SyncAlarm, [alarm]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncAlarm, [alarm])
   }
 
   /**
    * Deletes an entire Scene-Script
    */
   async deleteAlarm(alarmID: number) {
-    return this.buildCall(KnockautEndpoints.DeleteAlarm, [alarmID]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteAlarm, [
+      alarmID,
+    ])
   }
 
   /**
    * Syncronizes an Event
    */
   async syncEvent(event) {
-    return this.buildCall(KnockautEndpoints.SyncEvent, [event]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncEvent, [event])
   }
 
   /**
    * Deletes an entire Event
    */
   async deleteEvent(eventID: number) {
-    return this.buildCall(KnockautEndpoints.DeleteEvent, [eventID]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteEvent, [
+      eventID,
+    ])
   }
 
   /**
@@ -549,44 +393,44 @@ export class KnockautApiClient {
    * This function searches for existing Link-IDs, The new Links are created from variable-IDs
    */
   async syncFooterVars(variables: Array<FooterVariable>) {
-    return this.buildCall(KnockautEndpoints.SyncFooterVars, [
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncFooterVars, [
       variables,
-    ]).execute()
+    ])
   }
 
   /**
    * Returns an Object in the same Structure as it is in the Snapshot
    */
   async getSnapshotObject(objectID: number) {
-    return this.buildCall(KnockautEndpoints.GetSnapshotObject, [
+    return this.executeApiCall(DashboardEndpoints.KNO_GetSnapshotObject, [
       objectID,
-    ]).execute()
+    ])
   }
 
   /**
    * Changes the settings password and returns an object with sucess or error messages
    */
   async changePassword(oldPassword: number, newPassword: number) {
-    return this.buildCall(KnockautEndpoints.ChangePassword, [
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_ChangePassword, [
       {
         old: oldPassword,
         new: newPassword,
       },
-    ]).execute()
+    ])
   }
 
   /**
    * Returns an Object of AppInfos and alailable Update info
    */
   async getAppInfo() {
-    return this.buildCall(KnockautEndpoints.GetAppInfo).execute()
+    return this.executeApiCall(DashboardEndpoints.KNO_GetAppInfo)
   }
 
   /**
    * Returns true if the app was sucessfully updated
    */
   async updateApp() {
-    return this.buildCall(KnockautEndpoints.UpdateApp).execute()
+    return this.executeApiCall(DashboardEndpoints.KNO_UpdateApp)
   }
 
   /**
@@ -594,63 +438,124 @@ export class KnockautApiClient {
    * @returns bool True if initialization was sucessful
    */
   async initSystemFolders(): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.InitSystemFolders).execute()
+    return this.executeApiCall(DashboardEndpoints.KNO_InitSystemFolders)
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/modulreferenz/archive-control/ac-getloggedvalues/
    */
   async getLoggedValues(parameters: Array<number>): Promise<string[]> {
-    return this.buildCall(
-      KnockautEndpoints.GetLoggedValues,
+    return this.executeApiCall(
+      DashboardEndpoints.KNO_GetLoggedValues,
       parameters
-    ).execute()
+    )
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarylist/
    */
   async getLibraryList(): Promise<string[]> {
-    return this.buildCall(KnockautEndpoints.GetLibraryList).execute()
+    return this.executeApiCall(DashboardEndpoints.IPS_GetLibraryList)
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodule/
    */
   async getModule(moduleId: string): Promise<SymconModule> {
-    return this.buildCall(KnockautEndpoints.GetModule, [moduleId]).execute()
+    return this.executeApiCall(DashboardEndpoints.IPS_GetModule, [moduleId])
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrary/
    */
   async getLibrary(libraryId: string): Promise<SymconLibrary> {
-    return this.buildCall(KnockautEndpoints.GetLibrary, [libraryId]).execute()
+    return this.executeApiCall(DashboardEndpoints.IPS_GetLibrary, [libraryId])
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getlibrarymodules/
    */
   async getLibraryModules(libraryId: string): Promise<string[]> {
-    return this.buildCall(KnockautEndpoints.GetLibraryModules, [
+    return this.executeApiCall(DashboardEndpoints.IPS_GetLibraryModules, [
       libraryId,
-    ]).execute()
+    ])
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/modulverwaltung/ips-getmodulelist/
    */
   async getModuleList(): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.GetModuleList).execute()
+    return this.executeApiCall(DashboardEndpoints.IPS_GetModuleList)
   }
 
   /**
    * https://www.symcon.de/service/dokumentation/befehlsreferenz/instanzenverwaltung/ips-getinstancelistbymoduleid/
    */
   async getInstanceListByModuleID(moduleId: string): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.GetInstanceListByModuleID, [
-      moduleId,
-    ]).execute()
+    return this.executeApiCall(
+      DashboardEndpoints.IPS_GetInstanceListByModuleID,
+      [moduleId]
+    )
+  }
+
+  async NC_AddDevice(
+    instanceID: number,
+    token: string,
+    provider: string,
+    deviceID: string,
+    name: string,
+    webFrontVisualizationID: number
+  ): Promise<string> {
+    return this.executeApiCall(DashboardEndpoints.NC_AddDevice, [
+      instanceID,
+      token,
+      provider,
+      deviceID,
+      name,
+      webFrontVisualizationID,
+    ])
+  }
+
+  async NC_GetDevices(instanceID: number): Promise<string[]> {
+    return this.executeApiCall(DashboardEndpoints.NC_GetDevices, [instanceID])
+  }
+
+  async NC_RemoveDevice(
+    instanceID: number,
+    deviceID: string
+  ): Promise<boolean> {
+    return this.executeApiCall(DashboardEndpoints.NC_RemoveDevice, [
+      instanceID,
+      deviceID,
+    ])
+  }
+
+  async NC_SetDeviceName(
+    instanceID: number,
+    deviceID: string,
+    name: string
+  ): Promise<boolean> {
+    return this.executeApiCall(DashboardEndpoints.NC_SetDeviceName, [
+      instanceID,
+      deviceID,
+      name,
+    ])
+  }
+
+  async WFC_RegisterPNS(
+    instanceID: number,
+    token: string,
+    provider: string,
+    deviceID: string,
+    name: string
+  ): Promise<string> {
+    return this.executeApiCall(WFC_Endpoints.WFC_RegisterPNS, [
+      instanceID,
+      token,
+      provider,
+      deviceID,
+      name,
+    ])
   }
 
   /**
@@ -664,11 +569,11 @@ export class KnockautApiClient {
     environment: string,
     includeDefault: boolean = true
   ): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.GetActionsByEnvironment, [
+    return this.executeApiCall(DashboardEndpoints.IPS_GetActionsByEnvironment, [
       targetID,
       environment,
       includeDefault,
-    ]).execute()
+    ])
   }
 
   async getTranslatedActionsByEnvironment(
@@ -677,28 +582,29 @@ export class KnockautApiClient {
     includeDefault: boolean = true,
     languageCode: string = 'de'
   ): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.GetTranslatedActionsByEnvironment, [
-      targetID,
-      environment,
-      includeDefault,
-      languageCode,
-    ]).execute()
+    return this.executeApiCall(
+      DashboardEndpoints.IPS_GetTranslatedActionsByEnvironment,
+      [targetID, environment, includeDefault, languageCode]
+    )
   }
 
   async getFlowScriptData(scriptID: number): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.GetFlowScriptData, [
-      scriptID,
-    ]).execute()
+    return this.executeApiCall(
+      AdvancedSettingsEndpoints.KNO_GetFlowScriptData,
+      [scriptID]
+    )
   }
 
   async syncFlowScript(data: any): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.SyncFlowScript, [data]).execute()
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_SyncFlowScript, [
+      data,
+    ])
   }
 
   async deleteFlowScript(flowscriptID: number): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.DeleteFlowScript, [
+    return this.executeApiCall(AdvancedSettingsEndpoints.KNO_DeleteFlowScript, [
       flowscriptID,
-    ]).execute()
+    ])
   }
 
   /**
@@ -708,7 +614,7 @@ export class KnockautApiClient {
    * it only reeturns the defined icons.
    */
   async getIcons(iconNames: string[] = []): Promise<any[]> {
-    return this.buildCall(KnockautEndpoints.GetIcons, [iconNames]).execute()
+    return this.executeApiCall(DashboardEndpoints.KNO_GetIcons, [iconNames])
   }
 
   /**
@@ -717,7 +623,7 @@ export class KnockautApiClient {
    */
   getIcon(object: SnapshotObject | number | string) {
     // object can be either a snapshot-object, an ObjectID (int), or just an icon name (string)
-    var iconName = this.getIconLocal(object, '')
+    const iconName = this.getIconLocal(object, '')
     if (iconName.startsWith('BRELAG')) {
       return `${this.host}/skins/${this.skin}/icons/${iconName}`
     }
@@ -728,20 +634,20 @@ export class KnockautApiClient {
     object: SnapshotObject | number | string,
     path: string = '@/assets/icons/'
   ) {
-    var iconName = ''
+    let iconName = ''
     if (Number.isNaN(parseInt(<string>object)) && typeof object !== 'object') {
       iconName = <string>object
     } else {
       if (!Number.isNaN(parseInt(<string>object))) {
-        var objectID = object
-        object = this.store.state.snapshot.result.objects['ID' + objectID]
+        const objectID = object
+        object = this.store.state.snapshot.objects['ID' + objectID]
       }
       iconName = (<SnapshotObject>object).icon
       if (!iconName) {
         if ((<SnapshotObject>object).type == 6) {
           // Link
           object =
-            this.store.state.snapshot.result.objects[
+            this.store.state.snapshot.objects[
               'ID' + (<SnapshotObject>object).data.targetID
             ]
           iconName = (<SnapshotObject>object).icon
@@ -755,13 +661,12 @@ export class KnockautApiClient {
               iconName = 'Plug'
               break
             case 2:
-              var profileName = (<SnapshotObject>object).data.profile
+              let profileName = (<SnapshotObject>object).data.profile
               if ((<SnapshotObject>object).data.customProfile) {
                 profileName = (<SnapshotObject>object).data.customProfile
               }
               if (profileName) {
-                var profile =
-                  this.store.state.snapshot.result.profiles[profileName]
+                const profile = this.store.state.snapshot.profiles[profileName]
                 if (profile) {
                   iconName = profile.icon
                 }
@@ -818,44 +723,61 @@ export class KnockautApiClient {
     }
   }
 
-  buildCall(
-    method: string,
-    params: any[] = [],
-    isExtendedCall: boolean = true
-  ) {
-    return {
-      method: method,
-      params: params,
-      isExtendedCall: isExtendedCall,
-      execute: async () => {
-        try {
-          if (isExtendedCall) {
-            params = [this.configuratorID].concat(params)
-          }
-          let response = await axios.post(
-            this.buildUrl(isExtendedCall ? '/hook/knockaut/api/v1/' : '/api/'),
-            this.buildData(method, params),
-            isExtendedCall ? this.configs.extendedApi : this.configs.defaultApi
-          )
-          // TODO: Define interface for returned type
-          if (response.data.error) {
-            if (response.data.error.message) {
-              throw new Error(response.data.error.message)
-            } else {
-              throw new Error(response.data.error)
-            }
-          }
-          return response.data.result
-        } catch (error) {
-          this.handleError(error)
-        }
+  async executeApiCall(method: string, params: any[] = []) {
+    const axiosConfig: AxiosRequestConfig = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: this.apiAuthorization,
       },
+      withCredentials: false,
+      xsrfCookieName: 'csrftoken',
+    }
+    // Depending on which endpoint we are accessing, need to use different authentication
+    let urlPath = '/hook/knockaut/api/v1/'
+    if (DashboardEndpoints[method]) {
+      params = [this.configuratorID].concat(params)
+      axiosConfig.headers.Authorization = JSON.parse(
+        JSON.stringify(this.dashboardAuthorization)
+      )
+    } else if (AdvancedSettingsEndpoints[method]) {
+      params = [this.configuratorID].concat(params)
+      axiosConfig.headers.Authorization = JSON.parse(
+        JSON.stringify(this.advancedSettingsAuthorization)
+      )
+    } else {
+      urlPath = '/api/'
+      if (WFC_Endpoints[method]) {
+        axiosConfig.headers.Authorization = JSON.parse(
+          JSON.stringify(this.dashboardAuthorization)
+        )
+      } else {
+        axiosConfig.headers.Authorization = JSON.parse(
+          JSON.stringify(this.apiAuthorization)
+        )
+      }
+    }
+    try {
+      const response = await axios.post(
+        this.buildUrl(urlPath),
+        this.buildData(method, params),
+        axiosConfig
+      )
+      if (response.data.error) {
+        if (response.data.error.message) {
+          throw new Error(response.data.error.message)
+        } else {
+          throw new Error(response.data.error)
+        }
+      }
+      return response.data.result
+    } catch (error) {
+      this.handleError(error, method, params)
     }
   }
 
-  private handleError(error: Error) {
+  private handleError(error: Error, method: string, params: any[]) {
     // Log and throw again
-    console.log(error)
+    console.warn({ error, method, params })
     throw error
   }
 }
