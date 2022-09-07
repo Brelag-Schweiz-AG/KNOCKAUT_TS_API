@@ -89,14 +89,15 @@ export class KnockautApiClient {
   /** Sets password to access advanced settings functions */
   setAdvancedSettingsPassword(password: string) {
     const auth = Buffer.Buffer.from('settings:' + password).toString('base64')
+    // TODO: Should we verify password first and throw error?
     this.advancedSettingsAuthorization = 'Basic ' + auth
   }
 
   /** Sets password to access dashboard functions */
   setDashboardPassword(password: string) {
     const auth = Buffer.Buffer.from('webfront:' + password).toString('base64')
+    // TODO: Should we verify password first and throw error?
     this.dashboardAuthorization = 'Basic ' + auth
-    // TODO: Is this enough?
     this.wsOptions.protocol = [auth.replaceAll('=', '%3D')]
   }
 
@@ -735,16 +736,24 @@ export class KnockautApiClient {
     let urlPath = '/hook/knockaut/api/v1/'
     if (DashboardEndpoints[method]) {
       params = [this.configuratorID].concat(params)
-      axiosConfig.headers.Authorization = this.dashboardAuthorization
+      axiosConfig.headers.Authorization = JSON.parse(
+        JSON.stringify(this.dashboardAuthorization)
+      )
     } else if (AdvancedSettingsEndpoints[method]) {
       params = [this.configuratorID].concat(params)
-      axiosConfig.headers.Authorization = this.advancedSettingsAuthorization
+      axiosConfig.headers.Authorization = JSON.parse(
+        JSON.stringify(this.advancedSettingsAuthorization)
+      )
     } else {
       urlPath = '/api/'
       if (WFC_Endpoints[method]) {
-        axiosConfig.headers.Authorization = this.dashboardAuthorization
+        axiosConfig.headers.Authorization = JSON.parse(
+          JSON.stringify(this.dashboardAuthorization)
+        )
       } else {
-        axiosConfig.headers.Authorization = this.apiAuthorization
+        axiosConfig.headers.Authorization = JSON.parse(
+          JSON.stringify(this.apiAuthorization)
+        )
       }
     }
     try {
