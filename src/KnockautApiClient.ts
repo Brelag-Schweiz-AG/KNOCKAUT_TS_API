@@ -429,8 +429,8 @@ export class KnockautApiClient {
   /**
    * Returns true if the app was sucessfully updated
    */
-  async updateApp() {
-    return this.executeApiCall(DashboardEndpoints.KNO_UpdateApp)
+  async updateApp(appVersion: string = null) {
+    return this.executeApiCall(DashboardEndpoints.KNO_UpdateApp, appVersion)
   }
 
   /**
