@@ -1,15 +1,4 @@
-import { AxiosRequestConfig } from 'axios'
-import { WebSocketMessageType } from './constants'
-
-export enum SymconModuleType {
-  CORE = 0,
-  I_O = 1,
-  SPLITTER = 2,
-  DEVICE = 3,
-  CONFIGURATOR = 4,
-  DISCOVERY = 5,
-  VISUALIZER = 6,
-}
+import { WebSocketMessageType, SymconModuleType } from './constants'
 
 export interface SymconModule {
   Aliases: string[]
