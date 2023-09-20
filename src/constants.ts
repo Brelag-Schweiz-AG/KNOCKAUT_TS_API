@@ -175,6 +175,45 @@ export const AdvancedSettingsEndpoints = {
   KNO_DeleteFlowScript: 'KNO_DeleteFlowScript',
 }
 
+/* Symcon type definitions */
+export enum SymconObjectType {
+  Category = 0,
+  Instance = 1,
+  Variable = 2,
+  Script = 3,
+  Event = 4,
+  Media = 5,
+  Link = 6,
+}
+
+export enum SymconVariableType {
+  Boolean = 0,
+  Integer = 1,
+  Float = 2,
+  String = 3,
+}
+
+export const AdaptiveIcons = {
+  Battery: [0, 50, 100],
+  Door: [0, 100],
+  Energystorage: [0, 25, 50, 75, 100],
+  Eyes: [0, 100],
+  Floorlamp: [0, 100],
+  Garage: [0, 25, 100],
+  Hourglass: [0, 30, 60, 100],
+  Intensity: [0, 25, 50, 75, 100],
+  Jalousie: [0, 50, 100],
+  Light: [0, 1, 25, 50, 75, 100],
+  Lock: [0, 100],
+  Presence: [0, 100],
+  Raffstore: [0, 50, 100],
+  Speaker: [0, 1, 25, 50, 100],
+  Speedo: [0, 25, 50, 75, 100],
+  Temperature: [0, 25, 50, 75, 100],
+  Window: [0, 100],
+  Windspeed: [0, 30, 60, 100],
+}
+
 // Default values
 export const WebSocketOptionsDefaults: WebSocketOptions = {
   baseUrl: '',
@@ -186,3 +225,5 @@ export const WebSocketOptionsDefaults: WebSocketOptions = {
   reconnectionDelay: 1000,
   protocol: [],
 }
+
+/** */

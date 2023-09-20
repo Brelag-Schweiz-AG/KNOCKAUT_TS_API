@@ -4,7 +4,7 @@ module.exports = {
   env: {
     node: true,
   },
-  extends: ['prettier', 'prettier/standard'],
+  extends: ['prettier'],
   plugins: ['prettier'],
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',

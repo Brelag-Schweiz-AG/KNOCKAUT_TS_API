@@ -18,6 +18,9 @@ import {
   DashboardEndpoints,
   AdvancedSettingsEndpoints,
   WFC_Endpoints,
+  SymconObjectType,
+  SymconVariableType,
+  AdaptiveIcons,
 } from './constants'
 
 /**
@@ -631,76 +634,159 @@ export class KnockautApiClient {
   }
 
   getIconLocal(
-    object: SnapshotObject | number | string,
+    data: SnapshotObject | number | string,
     path: string = '@/assets/icons/'
   ) {
     let iconName = ''
-    if (Number.isNaN(parseInt(<string>object)) && typeof object !== 'object') {
-      iconName = <string>object
+    if (Number.isNaN(parseInt(<string>data)) && typeof data === 'string') {
+      /* STRING INPUT */
+      // icon name as received
+      iconName = <string>data
     } else {
-      if (!Number.isNaN(parseInt(<string>object))) {
-        const objectID = object
-        object = this.store.state.snapshot.objects['ID' + objectID]
+      if (!Number.isNaN(parseInt(<string>data))) {
+        /* NUMBER INPUT */
+        // get SnapshotObject by objectID
+        const objectID = data
+        data = this.store.state.snapshot.objects['ID' + objectID]
+        if (!data) {
+          return null
+        }
       }
-      iconName = (<SnapshotObject>object).icon
+      /* OBJECT INPUT or object found from number input. */
+      let object: SnapshotObject = <SnapshotObject>data
+      // 1. get icon from object itself
+      iconName = object.icon
       if (!iconName) {
-        if ((<SnapshotObject>object).type == 6) {
-          // Link
+        // 2. get icon from link-target
+        if (object.type === SymconObjectType.Link) {
           object =
-            this.store.state.snapshot.objects[
-              'ID' + (<SnapshotObject>object).data.targetID
-            ]
-          iconName = (<SnapshotObject>object).icon
+            this.store.state.snapshot.objects['ID' + object.data.targetID]
+          iconName = object.icon
         }
         if (!iconName) {
-          switch ((<SnapshotObject>object).type) {
-            case 0:
+          // 3. get icon by object-type
+          switch (object.type) {
+            case SymconObjectType.Category:
               iconName = 'Door'
               break
-            case 1:
+            case SymconObjectType.Instance:
               iconName = 'Plug'
               break
-            case 2:
-              let profileName = (<SnapshotObject>object).data.profile
-              if ((<SnapshotObject>object).data.customProfile) {
-                profileName = (<SnapshotObject>object).data.customProfile
+            case SymconObjectType.Variable:
+              // find variable profile
+              let profileName = object.data.profile
+              if (object.data.customProfile) {
+                profileName = object.data.customProfile
               }
               if (profileName) {
                 const profile = this.store.state.snapshot.profiles[profileName]
-                if (profile) {
-                  iconName = profile.icon
+                // 4. get icon by profile association
+                if (
+                  profile &&
+                  Array.isArray(profile.associations) &&
+                  profile.associations.length > 0
+                ) {
+                  let association = undefined
+                  let value = undefined
+                  // typecast value
+                  switch (object.data.type) {
+                    case SymconVariableType.Boolean:
+                      value = Boolean(object.data.value)
+                      break
+                    case SymconVariableType.Float:
+                      value = parseFloat(object.data.value)
+                      break
+                    case SymconVariableType.Integer:
+                      value = parseInt(object.data.value)
+                      break
+                    case SymconVariableType.String:
+                      value = String(object.data.value)
+                      break
+                  }
+                  if (object.data.type !== SymconVariableType.Float) {
+                    // search exact match
+                    association = profile.associations.find((assoc) => {
+                      return assoc.value === value
+                    })
+                  } else {
+                    // search nearest
+                    association = profile.associations.reduce(
+                      (nearest, obj) => {
+                        return Math.abs(value - obj.value) <
+                          Math.abs(value - nearest.value)
+                          ? obj
+                          : nearest
+                      }
+                    )
+                  }
+                  iconName = association ? association.icon : ''
                 }
+                // 5. get defined icon from profile
                 if (!iconName) {
-                  if (
-                    Array.isArray(profile.associations.length) &&
-                    profile.associations.length > 0
-                  ) {
-                    if (
-                      typeof profile.associations[
-                        (<SnapshotObject>object).data.value
-                      ] !== 'undefined'
-                    ) {
-                      iconName =
-                        profile.associations[
-                          (<SnapshotObject>object).data.value
-                        ].icon
+                  if (profile) {
+                    iconName = profile.icon
+                    // if profile icon exists and icon is adaptive,
+                    // then try to get adaptive icon
+                    if (!!iconName && !!AdaptiveIcons[iconName]) {
+                      if (profile.type !== SymconVariableType.String) {
+                        // "+" converts bool, int and float to number
+                        const absValue = +object.data.value
+                        let percentValue = -1
+                        if (
+                          [
+                            SymconVariableType.Integer,
+                            SymconVariableType.Float,
+                          ].includes(profile.type)
+                        ) {
+                          const v = {
+                            min: profile.minValue,
+                            max: profile.maxValue,
+                            x: absValue,
+                          }
+                          if (v.max > v.min) {
+                            percentValue =
+                              ((v.x - v.min) / (v.max - v.min)) * 100
+                          }
+                        } else {
+                          // boolean
+                          percentValue = absValue * 100
+                        }
+                        // if percent is valid, get specific version of the icon.
+                        // otherwise leave the icon in default version.
+                        if (percentValue >= 0) {
+                          // search nearest
+                          const iconValue = AdaptiveIcons[iconName].reduce(
+                            (nearest, numb) => {
+                              return Math.abs(percentValue - numb) <
+                                Math.abs(percentValue - nearest)
+                                ? numb
+                                : nearest
+                            }
+                          )
+                          iconName += '-' + iconValue
+                        }
+                      }
                     }
                   }
+                }
+                // 6. set fallback icon
+                if (!iconName) {
+                  iconName = 'Minus'
                 }
               } else {
                 iconName = 'Minus'
               }
               break
-            case 3:
+            case SymconObjectType.Script:
               iconName = 'Script'
               break
-            case 4:
+            case SymconObjectType.Event:
               iconName = 'Clock'
               break
-            case 5:
+            case SymconObjectType.Media:
               iconName = 'Image'
               break
-            case 6:
+            case SymconObjectType.Link:
               iconName = 'Link'
               break
           }
