@@ -624,9 +624,15 @@ export class KnockautApiClient {
    * Returns the icon-url for the given Object
    * @param object The IPSymcon Snapshot Object or the ID of the Object
    */
-  getIcon(object: SnapshotObject | number | string) {
+  getIcon(
+    object: SnapshotObject | number | string,
+    findOrFail: boolean = false // if set to false, it returns a default icon by type. (extended knockaut rule)
+  ) {
     // object can be either a snapshot-object, an ObjectID (int), or just an icon name (string)
-    const iconName = this.getIconLocal(object, '')
+    const iconName = this.getIconLocal(object, '', findOrFail)
+    if (typeof iconName === 'boolean') {
+      return iconName
+    }
     if (iconName.startsWith('BRELAG')) {
       return `${this.host}/skins/${this.skin}/icons/${iconName}`
     }
@@ -635,7 +641,8 @@ export class KnockautApiClient {
 
   getIconLocal(
     data: SnapshotObject | number | string,
-    path: string = '@/assets/icons/'
+    path: string = '@/assets/icons/',
+    findOrFail: boolean = false
   ) {
     let iconName = ''
     if (Number.isNaN(parseInt(<string>data)) && typeof data === 'string') {
@@ -667,10 +674,10 @@ export class KnockautApiClient {
           // 3. get icon by object-type
           switch (object.type) {
             case SymconObjectType.Category:
-              iconName = 'Door'
+              iconName = findOrFail ? '' : 'Door'
               break
             case SymconObjectType.Instance:
-              iconName = 'Plug'
+              iconName = findOrFail ? '' : 'Plug'
               break
             case SymconObjectType.Variable:
               // find variable profile
@@ -771,27 +778,30 @@ export class KnockautApiClient {
                 }
                 // 6. set fallback icon
                 if (!iconName) {
-                  iconName = 'Minus'
+                  iconName = findOrFail ? '' : 'Minus'
                 }
               } else {
-                iconName = 'Minus'
+                iconName = findOrFail ? '' : 'Minus'
               }
               break
             case SymconObjectType.Script:
               iconName = 'Script'
               break
             case SymconObjectType.Event:
-              iconName = 'Clock'
+              iconName = findOrFail ? '' : 'Clock'
               break
             case SymconObjectType.Media:
               iconName = 'Image'
               break
             case SymconObjectType.Link:
-              iconName = 'Link'
+              iconName = findOrFail ? '' : 'Link'
               break
           }
         }
       }
+    }
+    if (!iconName && findOrFail) {
+      return false
     }
     return `${path}${iconName}.svg`
   }

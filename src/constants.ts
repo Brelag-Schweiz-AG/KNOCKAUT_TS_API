@@ -193,6 +193,16 @@ export enum SymconVariableType {
   String = 3,
 }
 
+export enum SymconModuleType {
+  CORE = 0,
+  I_O = 1,
+  SPLITTER = 2,
+  DEVICE = 3,
+  CONFIGURATOR = 4,
+  DISCOVERY = 5,
+  VISUALIZER = 6,
+}
+
 export const AdaptiveIcons = {
   Battery: [0, 50, 100],
   Door: [0, 100],
@@ -225,5 +235,3 @@ export const WebSocketOptionsDefaults: WebSocketOptions = {
   reconnectionDelay: 1000,
   protocol: [],
 }
-
-/** */
